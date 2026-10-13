@@ -73,7 +73,8 @@
 
   <footer>
     Data: Reyna et al., <a href="https://doi.org/10.13026/v64v-d857">PhysioNet/CinC Challenge 2019</a>
-    (CC BY 4.0). API docs at <a href="docs">/docs</a>.
+    (CC BY 4.0). <span id="api-note">API docs at <a href="docs">/docs</a>.</span>
+    Code: <a href="https://github.com/ShawnJoshua03/sepsis-early-warning">GitHub</a>.
   </footer>
 </main>
 
@@ -156,6 +157,7 @@ async function select(p) {
     b.setAttribute("aria-pressed", b.dataset.id === p.id);
   statusEl.textContent = "Scoring…";
   clearInterval(timer);
+  if (p.result) { play(p); return; }  // static build: scores precomputed by the model
   try {
     const r = await fetch("score", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ records: p.records }) });
@@ -163,7 +165,7 @@ async function select(p) {
     p.result = await r.json();
     play(p);
   } catch (e) {
-    statusEl.textContent = "Scoring failed (" + e.message + "). The Space may be waking up; try again.";
+    statusEl.textContent = "Scoring failed (" + e.message + "). Is the API server running?";
   }
 }
 
@@ -186,6 +188,9 @@ document.getElementById("replay").onclick = () => current?.result && play(curren
 
 fetch("static/demo_patients.json").then(r => r.json()).then(list => {
   patients = list;
+  if (list.some(p => p.result))
+    document.getElementById("api-note").textContent =
+      "Scores precomputed by the trained model; run the live API locally (see README).";
   const wrap = document.getElementById("patients");
   for (const p of list) {
     const b = document.createElement("button");

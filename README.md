@@ -1,6 +1,7 @@
 # Sepsis Early Warning
 
 [![CI](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml/badge.svg)](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml)
+[![Live demo](https://img.shields.io/badge/demo-live-2457c5)](https://shawnjoshua03.github.io/sepsis-early-warning/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 An hourly ICU early-warning model that flags patients up to 12 hours before
@@ -8,8 +9,9 @@ sepsis onset, using routine vitals and labs. It is trained on real PhysioNet
 2019 Challenge data and scored with the Challenge's official clinical utility
 metric.
 
-The demo page replays real held-out patients hour by hour and shows when the
-alert would have fired. [Run it locally](#run-it-locally) in two commands.
+**[Try the live demo →](https://shawnjoshua03.github.io/sepsis-early-warning/)**
+It replays real held-out patients hour by hour and shows when the alert would
+have fired.
 
 ![Hourly risk for a held-out septic patient](docs/example_patient.png)
 
@@ -143,22 +145,24 @@ recommendation. Validation rules:
 
 ## Deploy
 
-The demo runs free on a **Hugging Face Docker Space**. CI runs the tests and a
-Docker smoke test on every push. If they pass, `.github/workflows/deploy-hf.yml`
-syncs the app to the Space. One-time setup:
+CI runs the tests and a Docker smoke test on every push to `main`. If they
+pass, `.github/workflows/pages.yml` publishes the demo to **GitHub Pages**.
+It's free and always on, with no server to wake up.
 
-1. Create a Hugging Face account and a **write** token at
-   <https://huggingface.co/settings/tokens>.
-2. In the GitHub repo, open **Settings → Secrets and variables → Actions** and
-   add:
-   - the secret `HF_TOKEN` (the token)
-   - the variable `HF_SPACE`, set to `<hf-username>/sepsis-early-warning`
-3. Push to `main`, or run the workflow by hand from the Actions tab.
+The Pages demo is static. At build time, `scripts/build_pages.py` sends each
+demo patient through the real `/score` endpoint and saves the responses next
+to the page. Every number shown therefore comes from the committed model,
+through the same validation and feature code as the live API. The page calls
+the live API only when no saved scores are present, which is the case when you
+run it locally.
 
-The public demo only replays bundled, de-identified Challenge patients and
-stores nothing. Don't put a deployment like this in front of real patient
-data: that needs authentication, audit logging and a hospital-controlled
-network.
+To host the **live API** as well, deploy the Dockerfile to any container host
+that sets `$PORT`, such as Render, Fly.io or Cloud Run. It's a standard
+uvicorn image that runs as a non-root user.
+
+The demo only replays bundled, de-identified Challenge patients and stores
+nothing. Don't put a deployment like this in front of real patient data: that
+needs authentication, audit logging and a hospital-controlled network.
 
 ## Layout
 
@@ -171,7 +175,7 @@ src/evaluate.py         official utility + windowed lead-time report
 src/sepsis_utility.py   vendored official metric (see NOTICE.md)
 src/app.py              FastAPI scorer + demo page
 src/static/             demo page and 7 held-out demo patients
-scripts/                demo-patient export, README figures
+scripts/                demo-patient export, README figures, Pages build
 tests/                  causality, metric and API tests
 data/make_sample.py     synthetic sample in the real schema
 ```

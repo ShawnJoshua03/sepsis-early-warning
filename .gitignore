@@ -22,3 +22,6 @@ venv/
 .env
 .DS_Store
 Thumbs.db
+
+# Built GitHub Pages demo (scripts/build_pages.py)
+site/

@@ -56,7 +56,7 @@ def main(data_dir):
     picks = [
         ("Septic, caught in time", _pick(summ, lambda s: fits(s) and s["septic"]
          and s["caught"] and not s["early_alarm"] and s["onset_row"] >= 18, 3, rng)),
-        ("Septic, missed", _pick(summ, lambda s: fits(s) and s["septic"]
+        ("Septic, not caught in window", _pick(summ, lambda s: fits(s) and s["septic"]
          and not s["caught"], 1, rng)),
         ("Not septic, no alarm", _pick(summ, lambda s: fits(s) and not s["septic"]
          and not s["any_alarm"], 2, rng)),

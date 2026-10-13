@@ -1,6 +1,6 @@
 FROM python:3.13-slim
 
-# Hugging Face Spaces runs containers as uid 1000 and routes to port 7860.
+# Runs as an unprivileged user; serves on $PORT (default 7860).
 RUN useradd -m -u 1000 user
 USER user
 ENV PYTHONUNBUFFERED=1 PYTHONPATH=/app/src PORT=7860 PATH=/home/user/.local/bin:$PATH
