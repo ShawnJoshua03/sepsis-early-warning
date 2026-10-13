@@ -1,7 +1,6 @@
 # Sepsis Early Warning
 
-[![CI](CI_BADGE_URL)](CI_RUNS_URL)
-[![Live demo](https://img.shields.io/badge/demo-Hugging%20Face-yellow)](LIVE_DEMO_URL)
+[![CI](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml/badge.svg)](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 An hourly ICU early-warning model that flags patients up to 12 hours before
@@ -9,8 +8,8 @@ sepsis onset, using routine vitals and labs. It is trained on real PhysioNet
 2019 Challenge data and scored with the Challenge's official clinical utility
 metric.
 
-**[Try the live demo →](LIVE_DEMO_URL)** It replays real held-out patients
-hour by hour and shows when the alert would have fired.
+The demo page replays real held-out patients hour by hour and shows when the
+alert would have fired. [Run it locally](#run-it-locally) in two commands.
 
 ![Hourly risk for a held-out septic patient](docs/example_patient.png)
 
