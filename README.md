@@ -40,16 +40,23 @@ curve, so the tuning generalized instead of overfitting.
 
 ## How it works
 
-```
-per-patient .psv files (one row per ICU hour)
-  -> src/load.py       read the Challenge folder structure
-  -> src/features.py   causal time-series features (no future leakage)
-  -> src/train.py      patient-grouped split, CV-tuned alert threshold
-  -> src/evaluate.py   official utility + AUROC/AUPRC + windowed lead time
-  -> src/app.py        FastAPI scorer + demo page (one risk score per hour)
+```mermaid
+flowchart LR
+    A[".psv files<br/>one row per ICU hour"] --> B["load.py<br/>Challenge folder structure"]
+    B --> C["features.py<br/>causal time-series features"]
+    C --> D["train.py<br/>patient-grouped split,<br/>CV-tuned threshold"]
+    D --> M[("model.joblib")]
+    D --> E["evaluate.py<br/>official utility, AUROC/AUPRC,<br/>windowed lead time"]
+    M --> F["app.py<br/>FastAPI POST /score"]
+    F --> G["build_pages.py<br/>pre-scores demo patients"]
+    G --> H["GitHub Pages<br/>static demo"]
 ```
 
-**Design decisions**
+**Tech stack:** Python 3.13, pandas, scikit-learn (`HistGradientBoostingClassifier`),
+FastAPI + Pydantic, vanilla JS demo page, pytest, ruff, Docker, GitHub Actions,
+GitHub Pages.
+
+## Design decisions and what I learned
 
 - **The official metric, not a proxy.** `src/sepsis_utility.py` vendors the
   Challenge's own `compute_prediction_utility`. It rewards alerts 6–12h before
@@ -74,6 +81,17 @@ per-patient .psv files (one row per ICU hour)
   time only counts alerts inside the window the metric rewards, and earlier
   alarms are reported separately.
 
+**Lessons**
+
+- In clinical time series, leakage hides in the plumbing: forward-fills,
+  rolling windows and row-level splits. Writing a test that corrupts the
+  future and checks the past was cheaper than auditing every feature by hand.
+- Choosing the metric matters as much as choosing the model. An hourly AUROC
+  of 0.82 says nothing about whether alerts arrive in time; the utility metric
+  and the alarm-burden numbers show the real trade-off.
+- Reporting the uncomfortable numbers (59% of non-septic patients alarm) makes
+  the result more credible, not less.
+
 ## Limitations
 
 - **High alarm burden.** At the utility-optimal threshold, most non-septic
@@ -96,11 +114,20 @@ per-patient .psv files (one row per ICU hour)
 ## Run it locally
 
 ```bash
+make setup    # pinned dependencies
+make run      # demo + API at http://localhost:8000
+make test     # causality, metric and API tests
+make lint     # ruff
+```
+
+Without `make` (e.g. plain Windows):
+
+```bash
 pip install -r requirements-dev.txt
 export PYTHONPATH=src            # PowerShell: $env:PYTHONPATH="src"
 
 uvicorn app:app --app-dir src --reload   # demo at http://localhost:8000
-pytest -q                                # causality, metric and API tests
+pytest -q
 ```
 
 The trained model (`artifacts/model.joblib`) is committed, so the demo works
@@ -145,7 +172,7 @@ recommendation. Validation rules:
 
 ## Deploy
 
-CI runs the tests and a Docker smoke test on every push to `main`. If they
+CI runs ruff, the tests and a Docker smoke test on every push to `main`. If they
 pass, `.github/workflows/pages.yml` publishes the demo to **GitHub Pages**.
 It's free and always on, with no server to wake up.
 
@@ -178,6 +205,8 @@ src/static/             demo page and 7 held-out demo patients
 scripts/                demo-patient export, README figures, Pages build
 tests/                  causality, metric and API tests
 data/make_sample.py     synthetic sample in the real schema
+Makefile                setup / run / test / lint / pages shortcuts
+pyproject.toml          ruff and pytest config
 ```
 
 ## Data and citation
