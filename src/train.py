@@ -16,7 +16,6 @@ from pathlib import Path
 
 import joblib
 import numpy as np
-import pandas as pd
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import average_precision_score, roc_auc_score
 from sklearn.model_selection import GroupKFold, GroupShuffleSplit
@@ -115,7 +114,8 @@ def train(data_dir="data/sample_psv"):
 
     joblib.dump({"model": clf, "threshold": thr,
                  "columns": list(X.columns)}, ARTIFACT_DIR / "model.joblib")
-    meta_te = meta_te.copy(); meta_te["proba"] = p_te
+    meta_te = meta_te.copy()
+    meta_te["proba"] = p_te
     meta_te.to_csv(ARTIFACT_DIR / "test_predictions.csv", index=False)
     (ARTIFACT_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2))
     print(f"\nSaved model + test predictions to {ARTIFACT_DIR}/")

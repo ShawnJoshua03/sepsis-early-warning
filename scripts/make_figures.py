@@ -11,12 +11,13 @@ import json
 from pathlib import Path
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from config import LABEL, LABEL_SHIFT_HOURS
+from config import LABEL
 from sepsis_utility import normalized_utility
 
 ARTIFACT_DIR, DOCS = Path("artifacts"), Path("docs")

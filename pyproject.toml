@@ -1,0 +1,14 @@
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["site", "src/sepsis_utility.py"]  # vendored verbatim
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]  # long lines are reviewed by eye, not enforced
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "config", "evaluate", "features", "load", "sepsis_utility", "train"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

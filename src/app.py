@@ -7,7 +7,6 @@ mirrors how an early-warning model actually runs at the bedside: one score per
 hour, using only data up to that hour.
 """
 from pathlib import Path
-from typing import Optional
 
 import joblib
 import pandas as pd
@@ -48,11 +47,11 @@ MAX_HOURS = 2000  # far beyond any real ICU stay in the challenge data
 HourlyRecord = create_model(
     "HourlyRecord",
     __config__=ConfigDict(extra="forbid"),
-    **{c: (Optional[float], None)
+    **{c: (float | None, None)
        for c in CHANNELS + DEMOGRAPHICS if c != "ICULOS"},
     ICULOS=(int, Field(ge=1)),
     # Accepted so raw .psv rows can be posted as-is; ignored for inference.
-    **{LABEL: (Optional[float], None)},
+    **{LABEL: (float | None, None)},
 )
 
 

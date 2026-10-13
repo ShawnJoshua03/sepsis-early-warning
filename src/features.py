@@ -18,7 +18,7 @@ Plus ICULOS, demographics, and a running count of total lab draws.
 import numpy as np
 import pandas as pd
 
-from config import VITALS, LABS, DEMOGRAPHICS, LABEL, CHANNELS, ROLL_WINDOW
+from config import CHANNELS, DEMOGRAPHICS, LABEL, LABS, ROLL_WINDOW, VITALS
 
 
 def _per_patient(g):

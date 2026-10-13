@@ -12,7 +12,7 @@ def _septic(n=40, first_label=20):
 
 def test_never_predicting_scores_zero():
     labels = [_septic(), np.zeros(30, dtype=int)]
-    preds = [np.zeros_like(l) for l in labels]
+    preds = [np.zeros_like(y) for y in labels]
     assert normalized_utility(labels, preds) == 0.0
 
 

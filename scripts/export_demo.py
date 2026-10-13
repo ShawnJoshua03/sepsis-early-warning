@@ -52,7 +52,10 @@ def main(data_dir):
     summ = {pid: _summarize(g, thr) for pid, g in preds.groupby("patient_id")}
 
     rng = np.random.default_rng(7)
-    fits = lambda s: 24 <= s["hours"] <= 96
+
+    def fits(s):
+        return 24 <= s["hours"] <= 96
+
     picks = [
         ("Septic, caught in time", _pick(summ, lambda s: fits(s) and s["septic"]
          and s["caught"] and not s["early_alarm"] and s["onset_row"] >= 18, 3, rng)),

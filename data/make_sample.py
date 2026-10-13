@@ -44,7 +44,8 @@ def _one_patient(pid, septic):
     length = int(RNG.integers(20, 61))
     age = float(np.clip(RNG.normal(63, 16), 18, 95))
     gender = int(RNG.integers(0, 2))
-    unit1 = int(RNG.integers(0, 2)); unit2 = 1 - unit1
+    unit1 = int(RNG.integers(0, 2))
+    unit2 = 1 - unit1
     hosp_adm = float(-RNG.uniform(0, 60))
 
     # Onset (in hours) for septic patients; label starts 6h earlier.
