@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sepsis Early Warning — demo</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #fff; --ink: #1c1f23; --muted: #646b73; --line: #e2e3e0;
+    --risk: #2457c5; --thr: #b4232c; --window: rgba(36, 160, 90, .13); --onset: #1f8a4c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #131517; --panel: #1b1e21; --ink: #e8eaec; --muted: #9aa1a8; --line: #2c3035;
+      --risk: #7fa6ff; --thr: #ff6b6b; --window: rgba(80, 200, 130, .14); --onset: #5ed18f; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -.01em; }
+  .lede { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
+  .note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--line);
+    padding: 2px 10px; margin: 0 0 24px; }
+  .patients { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .patients button { font: inherit; font-size: 13px; padding: 7px 12px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+  .patients button[aria-pressed="true"] { border-color: var(--risk); box-shadow: inset 0 0 0 1px var(--risk); }
+  .patients small { display: block; color: var(--muted); font-size: 11px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .chart-wrap { overflow-x: auto; }
+  svg { display: block; width: 100%; min-width: 520px; height: auto; }
+  svg text { fill: var(--muted); font-size: 11px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 14px; }
+  .stat { border-top: 1px solid var(--line); padding-top: 8px; }
+  .stat b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--muted); font-size: 12px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; }
+  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .controls button { font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 6px;
+    border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
+  #status { color: var(--muted); font-size: 13px; }
+  footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sepsis Early Warning</h1>
+  <p class="lede">A gradient-boosting model scores ICU patients every hour from vitals and labs,
+    aiming to flag sepsis up to 12 hours before clinical onset. Pick a real, held-out patient
+    from the PhysioNet 2019 Challenge data and watch the risk score build hour by hour.</p>
+  <p class="note">Research demo on public de-identified data. Not a medical device; do not enter
+    real patient information.</p>
+
+  <div class="patients" id="patients" role="group" aria-label="Demo patients"></div>
+
+  <section class="panel">
+    <div class="controls">
+      <button id="replay" type="button">Replay</button>
+      <span id="status">Loading…</span>
+    </div>
+    <div class="chart-wrap"><svg id="chart" viewBox="0 0 900 320" role="img"
+      aria-label="Hourly sepsis risk"></svg></div>
+    <div class="legend">
+      <span><i style="background:var(--risk)"></i>Hourly risk</span>
+      <span><i style="background:var(--thr)"></i>Alert threshold</span>
+      <span><i style="background:var(--onset)"></i>Clinical onset</span>
+      <span><i style="background:var(--window);height:10px"></i>Useful alert window (−12h to +3h)</span>
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <footer>
+    Data: Reyna et al., <a href="https://doi.org/10.13026/v64v-d857">PhysioNet/CinC Challenge 2019</a>
+    (CC BY 4.0). API docs at <a href="docs">/docs</a>.
+  </footer>
+</main>
+
+<script>
+const W = 900, H = 320, M = { l: 44, r: 16, t: 14, b: 34 };
+const svg = document.getElementById("chart");
+const statsEl = document.getElementById("stats");
+const statusEl = document.getElementById("status");
+let patients = [], current = null, timer = null;
+
+const el = (tag, attrs, text) => {
+  const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text != null) n.textContent = text;
+  return n;
+};
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+function draw(res, p, shown) {
+  svg.replaceChildren();
+  const hours = p.records.map(r => r.ICULOS);
+  const x0 = Math.min(...hours), x1 = Math.max(...hours, p.onset_iculos ?? 0);
+  const x = h => M.l + (h - x0) / Math.max(1, x1 - x0) * (W - M.l - M.r);
+  const y = v => M.t + (1 - v) * (H - M.t - M.b);
+
+  if (p.onset_iculos != null) {
+    const a = Math.max(x0, p.onset_iculos - 12), b = Math.min(x1, p.onset_iculos + 3);
+    svg.append(el("rect", { x: x(a), y: M.t, width: Math.max(0, x(b) - x(a)),
+      height: H - M.t - M.b, fill: css("--window") }));
+  }
+  for (const v of [0, .25, .5, .75, 1]) {
+    svg.append(el("line", { x1: M.l, x2: W - M.r, y1: y(v), y2: y(v), stroke: css("--line") }));
+    svg.append(el("text", { x: M.l - 8, y: y(v) + 4, "text-anchor": "end" }, v.toFixed(2)));
+  }
+  const step = Math.ceil((x1 - x0) / 10 / 6) * 6 || 6;
+  for (let h = Math.ceil(x0 / step) * step; h <= x1; h += step)
+    svg.append(el("text", { x: x(h), y: H - 12, "text-anchor": "middle" }, h + "h"));
+  svg.append(el("text", { x: W - M.r, y: H - 0, "text-anchor": "end" }, "hours in ICU"));
+
+  svg.append(el("line", { x1: M.l, x2: W - M.r, y1: y(res.threshold), y2: y(res.threshold),
+    stroke: css("--thr"), "stroke-dasharray": "5 4", "stroke-width": 1.5 }));
+  if (p.onset_iculos != null && p.onset_iculos <= x1)
+    svg.append(el("line", { x1: x(p.onset_iculos), x2: x(p.onset_iculos), y1: M.t, y2: H - M.b,
+      stroke: css("--onset"), "stroke-width": 2 }));
+
+  const pts = res.hourly_risk.slice(0, shown).map((v, i) => `${x(hours[i])},${y(v)}`).join(" ");
+  svg.append(el("polyline", { points: pts, fill: "none", stroke: css("--risk"),
+    "stroke-width": 2.25, "stroke-linejoin": "round" }));
+  const firstIdx = res.hourly_risk.findIndex(v => v >= res.threshold);
+  if (firstIdx >= 0 && firstIdx < shown)
+    svg.append(el("circle", { cx: x(hours[firstIdx]), cy: y(res.hourly_risk[firstIdx]), r: 5,
+      fill: css("--thr") }));
+}
+
+function stats(res, p) {
+  const onset = p.onset_iculos, alert = res.first_alert_hour;
+  let outcome;
+  if (onset == null) outcome = alert == null ? "Correctly quiet" : "False alarm";
+  else if (alert == null) outcome = "Missed";
+  else if (alert < onset - 12) outcome = "Alarm before window";
+  else if (alert <= onset + 3) outcome = "Caught in window";
+  else outcome = "Too late";
+  const items = [
+    [outcome, "Outcome"],
+    [alert == null ? "—" : alert + "h", "First alert"],
+    [onset == null ? "not septic" : onset + "h", "Clinical onset"],
+    [onset != null && alert != null ? (onset - alert) + "h" : "—", "Warning before onset"],
+  ];
+  statsEl.replaceChildren(...items.map(([v, k]) => {
+    const d = document.createElement("div"); d.className = "stat";
+    d.innerHTML = "<b></b><span></span>";
+    d.children[0].textContent = v; d.children[1].textContent = k;
+    return d;
+  }));
+}
+
+async function select(p) {
+  current = p;
+  for (const b of document.querySelectorAll("#patients button"))
+    b.setAttribute("aria-pressed", b.dataset.id === p.id);
+  statusEl.textContent = "Scoring…";
+  clearInterval(timer);
+  try {
+    const r = await fetch("score", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ records: p.records }) });
+    if (!r.ok) throw new Error(r.status);
+    p.result = await r.json();
+    play(p);
+  } catch (e) {
+    statusEl.textContent = "Scoring failed (" + e.message + "). The Space may be waking up; try again.";
+  }
+}
+
+function play(p) {
+  clearInterval(timer);
+  const res = p.result, n = res.hourly_risk.length;
+  let shown = 1;
+  statsEl.replaceChildren();
+  const tick = () => {
+    draw(res, p, shown);
+    statusEl.textContent = `Patient ${p.id} · hour ${p.records[shown - 1].ICULOS} of ${p.records[n - 1].ICULOS}`;
+    if (shown >= n) { clearInterval(timer); stats(res, p); return; }
+    shown++;
+  };
+  tick();
+  timer = setInterval(tick, Math.max(25, 2400 / n));
+}
+
+document.getElementById("replay").onclick = () => current?.result && play(current);
+
+fetch("static/demo_patients.json").then(r => r.json()).then(list => {
+  patients = list;
+  const wrap = document.getElementById("patients");
+  for (const p of list) {
+    const b = document.createElement("button");
+    b.type = "button"; b.dataset.id = p.id;
+    b.innerHTML = "<span></span><small></small>";
+    b.children[0].textContent = p.id;
+    b.children[1].textContent = p.kind;
+    b.onclick = () => select(p);
+    wrap.append(b);
+  }
+  select(list[0]);
+}).catch(() => { statusEl.textContent = "Could not load demo patients."; });
+</script>
+</body>
+</html>

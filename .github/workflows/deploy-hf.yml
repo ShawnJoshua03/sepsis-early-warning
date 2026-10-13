@@ -1,0 +1,65 @@
+# Sync the app to a Hugging Face Docker Space after CI passes on main.
+#
+# One-time setup (see README "Deploy"):
+#   - repo secret   HF_TOKEN  = a Hugging Face token with write access
+#   - repo variable HF_SPACE  = "<hf-username>/sepsis-early-warning"
+# Without them this workflow skips quietly.
+name: Deploy to Hugging Face
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    if: >-
+      vars.HF_SPACE != '' &&
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assemble Space contents
+        run: |
+          mkdir -p space/artifacts
+          cp -r Dockerfile requirements.txt src NOTICE.md LICENSE space/
+          cp artifacts/model.joblib artifacts/metrics.json space/artifacts/
+          # Spaces read their config from README front matter; keep it out of
+          # the GitHub README and generate it here instead.
+          cat > space/README.md <<'EOF'
+          ---
+          title: Sepsis Early Warning
+          emoji: 🩺
+          colorFrom: blue
+          colorTo: green
+          sdk: docker
+          app_port: 7860
+          pinned: false
+          license: mit
+          short_description: Hourly ICU sepsis risk, scored on the PhysioNet 2019 utility
+          ---
+
+          Live demo for https://github.com/${{ github.repository }}.
+          EOF
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Upload to Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          pip install "huggingface_hub>=0.35,<1"
+          python - <<'EOF'
+          import os
+          from huggingface_hub import HfApi
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          api.create_repo(os.environ["HF_SPACE"], repo_type="space",
+                          space_sdk="docker", exist_ok=True)
+          api.upload_folder(folder_path="space", repo_id=os.environ["HF_SPACE"],
+                            repo_type="space", delete_patterns=["*"],
+                            commit_message=f"Sync {os.environ['GITHUB_SHA'][:7]}")
+          EOF

@@ -1,0 +1,9 @@
+# Pinned to the versions the bundled model was trained and tested with.
+# scikit-learn in particular must match to unpickle artifacts/model.joblib.
+pandas==2.3.2
+numpy==2.3.1
+scikit-learn==1.7.2
+joblib==1.5.2
+fastapi==0.136.3
+pydantic==2.11.7
+uvicorn[standard]==0.48.0

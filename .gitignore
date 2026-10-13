@@ -1,0 +1,24 @@
+# Raw challenge data: download from PhysioNet (see README), don't commit
+training_setA/
+training_setB/
+
+# Seeded synthetic sample: regenerate with python data/make_sample.py
+data/sample_psv/
+
+# Large / regenerable training outputs (model.joblib + metrics stay committed)
+artifacts/test_predictions.csv
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Local tooling
+.claude/
+.claude-flow/
+.swarm/
+.env
+.DS_Store
+Thumbs.db

@@ -1,0 +1,14 @@
+training_setA/
+training_setB/
+data/
+docs/
+tests/
+scripts/
+artifacts/test_predictions.csv
+.venv/
+venv/
+.git/
+.github/
+**/__pycache__/
+.pytest_cache/
+.claude/

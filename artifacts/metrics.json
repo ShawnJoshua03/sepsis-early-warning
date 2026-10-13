@@ -1,0 +1,10 @@
+{
+  "test_auroc": 0.8168,
+  "test_auprc": 0.0921,
+  "threshold": 0.32,
+  "cv_utility": 0.3738,
+  "train_utility_in_sample": 0.6749,
+  "test_normalized_utility": 0.4235,
+  "n_train_patients": 13321,
+  "n_test_patients": 4441
+}
