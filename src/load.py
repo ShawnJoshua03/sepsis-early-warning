@@ -4,37 +4,34 @@ import os
 
 import pandas as pd
 
-from config import ALL_COLUMNS
+from config import ALL_COLUMNS, LABEL
 
 
 def load_psv_dir(path):
     """Read every .psv in `path`; return a long frame with a patient_id column.
 
-    Works for both the synthetic sample and the real challenge folders
-    (training_setA / training_setB), which have identical schemas.
+    Fails if any file is unreadable or has no labels, so a corrupt download
+    can't quietly shrink the training set.
     """
     files = sorted(glob.glob(os.path.join(path, "*.psv")))
     if not files:
         raise FileNotFoundError(f"No .psv files in {path}")
-    frames = []
+    frames, skipped = [], []
     for f in files:
-        pid = os.path.splitext(os.path.basename(f))[0]
         try:
             df = pd.read_csv(f, sep="|")
-        except Exception:
+        except (pd.errors.ParserError, pd.errors.EmptyDataError, UnicodeDecodeError):
+            skipped.append(f)
             continue
-        if df.empty or df["SepsisLabel"].isna().all():
+        if LABEL not in df.columns or df[LABEL].isna().all():
+            skipped.append(f)
             continue
         for c in ALL_COLUMNS:
             if c not in df.columns:
                 df[c] = pd.NA
-        df["patient_id"] = pid
+        df["patient_id"] = os.path.splitext(os.path.basename(f))[0]
         frames.append(df)
-    out = pd.concat(frames, ignore_index=True)
-    return out
-
-
-if __name__ == "__main__":
-    df = load_psv_dir("data/sample_psv")
-    print("rows:", len(df), "patients:", df["patient_id"].nunique())
-    print("sepsis-positive hours:", int(df["SepsisLabel"].sum()))
+    if skipped:
+        raise ValueError(f"{len(skipped)} of {len(files)} files in {path} are unreadable "
+                         f"or unlabeled, e.g. {skipped[:3]}")
+    return pd.concat(frames, ignore_index=True)
