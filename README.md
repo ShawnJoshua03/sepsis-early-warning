@@ -9,9 +9,10 @@ tries to flag sepsis up to 12 hours before onset. It's trained on the
 PhysioNet 2019 Challenge data and scored with the Challenge's own utility
 metric.
 
-I wanted to build something in healthcare, found an interesting paper on this
-problem, and wanted to learn the tools. It was a heavy task for
-a laptop. Mine kept breaking.
+I wanted to build something in healthcare and learn the tools along the way.
+The task, data and scoring all come from the 2019 PhysioNet/CinC Challenge
+paper (Reyna et al., cited at the bottom). It was a heavy task for a laptop.
+Mine kept breaking.
 
 **[Live demo](https://shawnjoshua03.github.io/sepsis-early-warning/)**: replays
 held-out patients hour by hour and shows when the alert would have fired.
@@ -90,8 +91,9 @@ Choices that matter:
   0.36). Those were scored on hidden test sets that included a hospital no team
   had data from. This is an internal split of one hospital system, which is
   much easier.
-- Trained on 17,762 of the 20,336 patients in training set A. Training set B
-  (the second hospital) wasn't used. Training on A and testing on B is the
+- Trained on 17,762 of the 20,336 patients in training set A, the most my
+  laptop could run without breaking down. Training set B (the second
+  hospital) wasn't used. Training on A and testing on B is the
   external-validation experiment this still needs.
 - It's a gradient-boosting baseline. Top entries added sequence models and
   per-hospital calibration, and the probabilities here aren't calibrated.
