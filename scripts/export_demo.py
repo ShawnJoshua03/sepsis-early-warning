@@ -1,5 +1,5 @@
 """
-Export a handful of HELD-OUT test patients for the web demo.
+Export a handful of held-out test patients for the web demo.
 
 Picks real patients from the test split (never seen in training) covering the
 cases worth showing: septic and caught in the useful window, septic but
@@ -19,14 +19,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from config import ALL_COLUMNS, LABEL, LABEL_SHIFT_HOURS
+from config import ALL_COLUMNS, LABEL, LABEL_SHIFT_HOURS, WINDOW_EARLY, WINDOW_LATE
 
 ARTIFACT_DIR = Path("artifacts")
 OUT = Path("src/static/demo_patients.json")
-WINDOW_EARLY, WINDOW_LATE = -12, 3
 
 
-def _summarize(g, thr):
+def _summariesarize(g, thr):
     g = g.sort_values("ICULOS").reset_index(drop=True)
     labels = g[LABEL].to_numpy()
     preds = g["proba"].to_numpy() >= thr
@@ -40,8 +39,8 @@ def _summarize(g, thr):
     return s
 
 
-def _pick(summ, want, n, rng):
-    ids = [pid for pid, s in summ.items() if want(s)]
+def _pick(summaries, want, n, rng):
+    ids = [pid for pid, s in summaries.items() if want(s)]
     rng.shuffle(ids)
     return ids[:n]
 
@@ -49,7 +48,7 @@ def _pick(summ, want, n, rng):
 def main(data_dir):
     thr = json.loads((ARTIFACT_DIR / "metrics.json").read_text())["threshold"]
     preds = pd.read_csv(ARTIFACT_DIR / "test_predictions.csv")
-    summ = {pid: _summarize(g, thr) for pid, g in preds.groupby("patient_id")}
+    summaries = {pid: _summariesarize(g, thr) for pid, g in preds.groupby("patient_id")}
 
     rng = np.random.default_rng(7)
 
@@ -57,13 +56,13 @@ def main(data_dir):
         return 24 <= s["hours"] <= 96
 
     picks = [
-        ("Septic, caught in time", _pick(summ, lambda s: fits(s) and s["septic"]
+        ("Septic, caught in time", _pick(summaries, lambda s: fits(s) and s["septic"]
          and s["caught"] and not s["early_alarm"] and s["onset_row"] >= 18, 3, rng)),
-        ("Septic, not caught in window", _pick(summ, lambda s: fits(s) and s["septic"]
+        ("Septic, not caught in window", _pick(summaries, lambda s: fits(s) and s["septic"]
          and not s["caught"], 1, rng)),
-        ("Not septic, no alarm", _pick(summ, lambda s: fits(s) and not s["septic"]
+        ("Not septic, no alarm", _pick(summaries, lambda s: fits(s) and not s["septic"]
          and not s["any_alarm"], 2, rng)),
-        ("Not septic, false alarm", _pick(summ, lambda s: fits(s) and not s["septic"]
+        ("Not septic, false alarm", _pick(summaries, lambda s: fits(s) and not s["septic"]
          and s["any_alarm"], 1, rng)),
     ]
 

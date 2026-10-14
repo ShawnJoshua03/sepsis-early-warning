@@ -2,14 +2,13 @@
 Train the hourly sepsis-risk model.
 
 Key correctness choices:
-  - Split by PATIENT, never by row. Hours from one patient must not appear in
-    both train and test, or the model leaks and the score is fiction.
-  - Tune the alert threshold to maximize the official normalized utility on
-    OUT-OF-FOLD predictions for the training patients (patient-grouped CV),
-    then apply it unchanged to test. Tuning on the final model's in-sample
-    predictions would pick a threshold for overconfident scores that don't
-    look like what the model produces on new patients. Utility, not accuracy
-    or F1, is what the challenge rewards.
+  - Split by patient, never by row. Hours from one patient in both train and
+    test would leak.
+  - Pick the alert threshold that maximizes the official normalized utility on
+    out-of-fold predictions for the training patients (patient-grouped CV), then
+    apply it unchanged to test. The final model's in-sample scores are
+    overconfident (utility 0.67 in-sample vs 0.42 on test), so a threshold
+    tuned on them doesn't transfer.
 """
 import json
 from pathlib import Path
@@ -29,7 +28,7 @@ ARTIFACT_DIR = Path("artifacts")
 CV_FOLDS = 3
 
 
-def _sequences(meta, proba, threshold):
+def _per_patient_alerts(meta, proba, threshold):
     """Group into per-patient hourly (labels, binary-preds) arrays for utility."""
     df = meta.copy()
     df["proba"] = proba
@@ -45,7 +44,7 @@ def _best_threshold(meta, proba):
     grid = np.round(np.arange(0.01, 0.96, 0.01), 3)
     best_t, best_u = 0.5, -1e9
     for t in grid:
-        labels_list, preds_list = _sequences(meta, proba, t)
+        labels_list, preds_list = _per_patient_alerts(meta, proba, t)
         u = normalized_utility(labels_list, preds_list)
         if u > best_u:
             best_u, best_t = u, t
@@ -95,9 +94,9 @@ def train(data_dir="data/sample_psv"):
     p_tr = clf.predict_proba(X_tr)[:, 1]
     p_te = clf.predict_proba(X_te)[:, 1]
 
-    labels_tr, preds_tr = _sequences(meta_tr, p_tr, thr)
+    labels_tr, preds_tr = _per_patient_alerts(meta_tr, p_tr, thr)
     u_tr = normalized_utility(labels_tr, preds_tr)
-    labels_te, preds_te = _sequences(meta_te, p_te, thr)
+    labels_te, preds_te = _per_patient_alerts(meta_te, p_te, thr)
     u_te = normalized_utility(labels_te, preds_te)
 
     metrics = {

@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from config import LABEL
+from config import LABEL, WINDOW_EARLY, WINDOW_LATE
 from sepsis_utility import normalized_utility
 
 ARTIFACT_DIR, DOCS = Path("artifacts"), Path("docs")
@@ -55,7 +55,8 @@ def example_patient(preds, thr):
     onset = p["onset_iculos"]
 
     fig, ax = plt.subplots(figsize=(6.4, 3.2))
-    ax.axvspan(onset - 12, onset + 3, color=GREEN, alpha=.12, label="useful window (−12h to +3h)")
+    ax.axvspan(onset + WINDOW_EARLY, onset + WINDOW_LATE, color=GREEN, alpha=.12,
+               label="useful window (−12h to +3h)")
     ax.plot(g["ICULOS"], g["proba"], color=BLUE, lw=2, label="hourly risk")
     ax.axhline(thr, color=RED, ls="--", lw=1.3, label="alert threshold")
     ax.axvline(onset, color=GREEN, lw=2, label="clinical onset")

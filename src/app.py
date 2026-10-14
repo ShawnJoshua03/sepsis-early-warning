@@ -1,10 +1,8 @@
 """
-Streaming sepsis-risk scorer.
+Sepsis-risk scorer.
 
-POST a patient's hourly records (as they'd arrive from the monitor/EHR) and get
-back the per-hour risk trajectory plus the first hour an alert fires. This
-mirrors how an early-warning model actually runs at the bedside: one score per
-hour, using only data up to that hour.
+POST one patient's hourly records and get back a risk score for every hour
+(each using only data up to that hour) plus the first hour an alert fires.
 """
 from pathlib import Path
 

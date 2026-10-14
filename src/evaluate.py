@@ -1,18 +1,11 @@
 """
-Evaluate the model the way the challenge and a clinician would read it.
+Report official normalized utility, AUROC/AUPRC and lead time on the test split.
 
-Reports:
-  - Official normalized utility (the challenge's headline metric).
-  - AUROC / AUPRC for discrimination.
-  - Early-warning lead time: for septic patients detected inside the useful
-    window, how many hours BEFORE clinical onset did the first in-window alert
-    fire? This is the number a clinician cares about.
-
-The useful window is the one the utility metric rewards: from 12h before
-clinical onset to 3h after. An alert earlier than that is not "very early
-detection"; it is an alarm that fired before anything predictive could be
-seen (often at admission) and the metric treats it as a false positive.
-Those are counted separately so they cannot inflate the lead time.
+Lead time only counts the first alert inside the window the utility metric
+rewards (12h before clinical onset to 3h after). Alerts earlier than that
+usually fire at admission, before anything predictive is visible, and the
+metric scores them as false positives. They're counted separately so they
+can't inflate the lead time.
 """
 import json
 from pathlib import Path
@@ -21,12 +14,10 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
 
-from config import LABEL, LABEL_SHIFT_HOURS
+from config import LABEL, LABEL_SHIFT_HOURS, WINDOW_EARLY, WINDOW_LATE
 from sepsis_utility import normalized_utility
 
 ARTIFACT_DIR = Path("artifacts")
-# Utility-metric window relative to clinical onset (hours), see sepsis_utility.
-WINDOW_EARLY, WINDOW_LATE = -12, 3
 
 
 def evaluate():
@@ -83,13 +74,6 @@ def evaluate():
                                  if n_nonseptic else None),
     }
     print(json.dumps(report, indent=2))
-    if len(lead):
-        print(f"\nPlain-English: of {n_septic} septic patients, {n_detected} were "
-              f"flagged between 12h before and 3h after clinical onset, a median "
-              f"of {np.median(lead):.0f}h before onset. {n_early_alarm} septic "
-              f"patients also had an alarm earlier than that window, and "
-              f"{n_nonseptic_alarm}/{n_nonseptic} non-septic patients were "
-              f"alarmed at least once.")
     (ARTIFACT_DIR / "clinical_report.json").write_text(json.dumps(report, indent=2))
     return report
 

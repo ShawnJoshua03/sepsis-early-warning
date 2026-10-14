@@ -3,8 +3,8 @@
 `src/sepsis_utility.py` contains `compute_prediction_utility`, taken from the
 official PhysioNet/CinC 2019 Challenge evaluation script
 (`evaluate_sepsis_score.py`, physionetchallenges/evaluation-2019, BSD-licensed).
-It is reused unchanged so this project reports the exact utility metric used by
-the Challenge organizers and every published entry. The cohort-normalization
+It is reused unchanged so this project reports the same utility metric the
+Challenge used to score entries. The cohort-normalization
 wrapper `normalized_utility` reimplements the same normalization the official
 script performs across a directory of files, but in memory.
 

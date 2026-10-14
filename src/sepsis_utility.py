@@ -3,7 +3,7 @@ Official PhysioNet/CinC 2019 utility metric.
 
 `compute_prediction_utility` is taken verbatim from the challenge's
 evaluate_sepsis_score.py (physionetchallenges/evaluation-2019, BSD-licensed)
-so our score matches the one the organizers and every published entry used.
+so scores here are computed the same way the Challenge scored entries.
 `normalized_utility` replicates the cohort normalization from that script but
 operates on in-memory per-patient arrays instead of directories of files.
 """

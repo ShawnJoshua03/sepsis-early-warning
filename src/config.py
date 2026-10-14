@@ -24,8 +24,11 @@ CHANNELS = VITALS + LABS          # time-varying measurements
 ALL_COLUMNS = VITALS + LABS + DEMOGRAPHICS + [LABEL]
 
 # The challenge labels are already shifted: SepsisLabel = 1 starting 6 hours
-# BEFORE clinical onset, so predicting the label == predicting sepsis 6h early.
+# before clinical onset, so predicting the label means predicting sepsis 6h early.
 LABEL_SHIFT_HOURS = 6
+
+# The utility metric only rewards alerts from 12h before clinical onset to 3h after.
+WINDOW_EARLY, WINDOW_LATE = -12, 3
 
 # Rolling window (hours) for trend features on vitals.
 ROLL_WINDOW = 6

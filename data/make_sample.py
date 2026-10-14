@@ -5,12 +5,10 @@ schema, so the pipeline runs offline. Replace with the real 42 MB download:
   https://physionet.org/content/challenge-2019/1.0.0/   (free, no credentialing)
   Point loaders at training/training_setA and training_setB.
 
-The generator reproduces the parts that make the task hard and realistic:
-  - hourly rows with heavy, channel-specific missingness (labs far sparser
-    than vitals)
-  - septic patients drift abnormal in the hours approaching onset
-  - the label is turned on 6h before onset (the challenge's shift), so a model
-    predicting the current label is effectively predicting 6h early
+What it copies from the real data:
+  - heavy, channel-specific missingness (labs far sparser than vitals)
+  - septic patients drifting abnormal in the hours before onset
+  - the Challenge's label shift: SepsisLabel turns on 6h before onset
 """
 import os
 import sys
@@ -30,17 +28,17 @@ VITAL_SD = {"HR": 6, "O2Sat": 1.5, "Temp": 0.3, "SBP": 10, "MAP": 7,
             "DBP": 6, "Resp": 2, "EtCO2": 4}
 VITAL_PMEAS = {"HR": .95, "O2Sat": .95, "Temp": .35, "SBP": .9, "MAP": .9,
                "DBP": .9, "Resp": .9, "EtCO2": .05}
-LAB_BASE = {k: v for k, v in {
+LAB_BASE = {
     "BaseExcess": 0, "HCO3": 24, "FiO2": 0.5, "pH": 7.38, "PaCO2": 40,
     "SaO2": 96, "AST": 30, "BUN": 16, "Alkalinephos": 80, "Calcium": 9.2,
     "Chloride": 104, "Creatinine": 1.0, "Bilirubin_direct": 0.3,
     "Glucose": 130, "Lactate": 1.5, "Magnesium": 2.0, "Phosphate": 3.5,
     "Potassium": 4.1, "Bilirubin_total": 0.7, "TroponinI": 0.04, "Hct": 30,
     "Hgb": 10.3, "PTT": 34, "WBC": 9, "Fibrinogen": 280, "Platelets": 210,
-}.items()}
+}
 
 
-def _one_patient(pid, septic):
+def _one_patient(septic):
     length = int(RNG.integers(20, 61))
     age = float(np.clip(RNG.normal(63, 16), 18, 95))
     gender = int(RNG.integers(0, 2))
@@ -54,7 +52,6 @@ def _one_patient(pid, septic):
     rows = []
     for t in range(length):
         row = {}
-        # severity ramps up in the ~10h before onset for septic patients
         sev = 0.0
         if onset is not None:
             sev = float(np.clip((t - (onset - 10)) / 10.0, 0, 1.2))
@@ -73,7 +70,6 @@ def _one_patient(pid, septic):
             if lab in ("Lactate", "WBC", "Creatinine", "BUN"):
                 base += sev * {"Lactate": 3.0, "WBC": 9, "Creatinine": 1.0,
                                "BUN": 12}[lab]
-            # labs measured sparsely (~ every several hours)
             p = 0.12 if lab in ("Lactate", "WBC", "Creatinine", "Glucose",
                                 "Potassium", "BUN") else 0.05
             row[lab] = round(float(RNG.normal(base, abs(base) * 0.08 + 0.1)), 2) \
@@ -85,15 +81,13 @@ def _one_patient(pid, septic):
         row["Unit2"] = unit2
         row["HospAdmTime"] = round(hosp_adm, 2)
         row["ICULOS"] = t + 1
-        # label shifted 6h early
         if onset is not None and t >= onset - LABEL_SHIFT_HOURS:
             row[LABEL] = 1
         else:
             row[LABEL] = 0
         rows.append(row)
 
-    df = pd.DataFrame(rows)[VITALS + LABS + DEMOGRAPHICS + [LABEL]]
-    return df
+    return pd.DataFrame(rows)[VITALS + LABS + DEMOGRAPHICS + [LABEL]]
 
 
 def make_sample(n_patients=400, septic_frac=0.09, out_dir="data/sample_psv"):
@@ -102,7 +96,7 @@ def make_sample(n_patients=400, septic_frac=0.09, out_dir="data/sample_psv"):
     for i in range(n_patients):
         septic = RNG.random() < septic_frac
         n_septic += int(septic)
-        df = _one_patient(i, septic)
+        df = _one_patient(septic)
         df.to_csv(os.path.join(out_dir, f"p{i:05d}.psv"), sep="|", index=False)
     print(f"Wrote {n_patients} patient files to {out_dir}/ "
           f"({n_septic} septic, {n_septic / n_patients:.1%})")

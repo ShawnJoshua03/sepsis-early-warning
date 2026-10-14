@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sepsis Early Warning — demo</title>
+<title>Sepsis Early Warning demo</title>
 <style>
   :root {
     --bg: #f7f7f5; --panel: #fff; --ink: #1c1f23; --muted: #646b73; --line: #e2e3e0;
@@ -139,9 +139,9 @@ function stats(res, p) {
   else outcome = "Too late";
   const items = [
     [outcome, "Outcome"],
-    [alert == null ? "—" : alert + "h", "First alert"],
+    [alert == null ? "none" : alert + "h", "First alert"],
     [onset == null ? "not septic" : onset + "h", "Clinical onset"],
-    [onset != null && alert != null ? (onset - alert) + "h" : "—", "Warning before onset"],
+    [onset != null && alert != null ? (onset - alert) + "h" : "n/a", "Warning before onset"],
   ];
   statsEl.replaceChildren(...items.map(([v, k]) => {
     const d = document.createElement("div"); d.className = "stat";

@@ -1,10 +1,9 @@
 """
 Causal time-series feature engineering for hourly sepsis prediction.
 
-Every feature at hour t uses only data available at or before t. That "no
-peeking into the future" discipline is the single most important correctness
-property in a streaming early-warning model, so it is enforced here with
-forward-fills and expanding/rolling windows that never look ahead.
+Every feature at hour t uses only data available at or before t: forward-fills
+and rolling/expanding windows, nothing that looks ahead. tests/test_features.py
+checks this.
 
 Per channel (vitals + labs):
   - forward-filled last observed value (carry the most recent measurement)
@@ -23,7 +22,7 @@ from config import CHANNELS, DEMOGRAPHICS, LABEL, LABS, ROLL_WINDOW, VITALS
 
 def _per_patient(g):
     g = g.sort_values("ICULOS").reset_index(drop=True)
-    cols = {}  # collect every column, build one DataFrame at the end
+    cols = {}
 
     for c in CHANNELS:
         col = g[c]
@@ -31,7 +30,6 @@ def _per_patient(g):
         ff = col.ffill()
         cols[f"{c}_ff"] = ff
         cols[f"{c}_measured"] = measured
-        # hours since last measurement (expanding, causal)
         since = np.full(len(g), np.nan)
         last = np.nan
         for i, m in enumerate(measured.to_numpy()):
@@ -83,11 +81,3 @@ def build_features(long_df):
     X = X.fillna(-1.0)
     return X, y, meta
 
-
-if __name__ == "__main__":
-    from load import load_psv_dir
-    long_df = load_psv_dir("data/sample_psv")
-    X, y, meta = build_features(long_df)
-    print("feature matrix:", X.shape)
-    print("positive rate:", round(float(y.mean()), 4))
-    print("features:", list(X.columns)[:12], "...")
