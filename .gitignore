@@ -15,10 +15,7 @@ __pycache__/
 venv/
 .pytest_cache/
 
-# Local tooling
-.claude/
-.claude-flow/
-.swarm/
+# Local
 .env
 .DS_Store
 Thumbs.db
