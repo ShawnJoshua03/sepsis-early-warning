@@ -1,5 +1,7 @@
 # Sepsis Early Warning
 
+**[Portfolio](https://shawnjoshua03.github.io/)**
+
 [![CI](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml/badge.svg)](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml)
 [![Live demo](https://img.shields.io/badge/demo-live-2457c5)](https://shawnjoshua03.github.io/sepsis-early-warning/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
