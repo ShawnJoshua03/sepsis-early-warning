@@ -9,23 +9,39 @@
     color-scheme: light dark;
     --paper: #eef2f1;
     --surface: #fafcfb;
-    --ink: #193336;
-    --muted: #53686a;
-    --risk: #116b75;
-    --alert: #b3443b;
-    --line: rgba(25, 51, 54, .16);
-    --window: rgba(17, 107, 117, .10);
+    --ink: #142a2d;
+    --muted: #3f5557;
+    --faint: #5d7173;
+    --risk: #0f6670;
+    --alert: #b0362c;
+    --alert-soft: rgba(176, 54, 44, .09);
+    --miss: #94570a;
+    --miss-soft: rgba(148, 87, 10, .10);
+    --ok-soft: rgba(15, 102, 112, .10);
+    --line: rgba(20, 42, 45, .16);
+    --window: rgba(15, 102, 112, .11);
+    --monitor: #0d1a1c;
+    --monitor-ink: #dff3ef;
+    --monitor-dim: #8fb0ac;
+    --display: "Sitka Display", "Iowan Old Style", Charter, "Bitstream Charter", "Palatino Linotype", Georgia, serif;
+    --digits: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #141d1e;
-      --surface: #1d292a;
+      --paper: #121b1c;
+      --surface: #1a2627;
       --ink: #e9f1f0;
-      --muted: #b5c4c2;
+      --muted: #c0cfcd;
+      --faint: #a3b5b3;
       --risk: #63b8c0;
-      --alert: #f18177;
+      --alert: #f28a80;
+      --alert-soft: rgba(242, 138, 128, .12);
+      --miss: #e0a654;
+      --miss-soft: rgba(224, 166, 84, .12);
+      --ok-soft: rgba(99, 184, 192, .12);
       --line: rgba(233, 241, 240, .18);
       --window: rgba(99, 184, 192, .14);
+      --monitor: #081011;
     }
   }
   * { box-sizing: border-box; }
@@ -33,28 +49,51 @@
     margin: 0;
     background: var(--paper);
     color: var(--ink);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
   }
-  main { max-width: 1280px; margin: 0 auto; padding: 34px 24px 48px; }
-  h1, h2, p { margin-top: 0; }
-  h1 { max-width: 18ch; margin-bottom: 10px; font-size: 32px; line-height: 1.12; letter-spacing: -.025em; }
-  h2 { margin-bottom: 0; font-size: 17px; line-height: 1.3; font-weight: 620; }
-  .intro { max-width: 920px; margin-bottom: 26px; }
-  .lede { max-width: 76ch; margin-bottom: 14px; font-size: 16px; }
-  .metric { margin-bottom: 14px; color: var(--muted); }
-  .metric strong { color: var(--ink); font-weight: 600; }
+  main { max-width: 1280px; margin: 0 auto; padding: 40px 24px 48px; }
+  h1, h2, h3, p { margin-top: 0; }
+  h1 {
+    margin-bottom: 14px;
+    font: 600 clamp(44px, 7vw, 84px)/1 var(--display);
+    letter-spacing: -.02em;
+  }
+  h2 { margin-bottom: 0; font-size: 18px; line-height: 1.3; font-weight: 650; }
+  h3 { margin-bottom: 6px; font-size: 16px; font-weight: 650; }
+  .lede { max-width: 70ch; margin-bottom: 26px; font-size: 18px; color: var(--muted); }
+  .num { font-family: var(--digits); font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+
+  /* Headline results: wins and costs at the same weight */
+  .headline {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0 0 6px;
+    border-top: 2px solid var(--ink);
+    border-bottom: 1px solid var(--line);
+  }
+  .headline > div { padding: 16px 18px 16px 0; min-width: 0; }
+  .headline > div + div { padding-left: 18px; border-left: 1px solid var(--line); }
+  .headline dt { color: var(--muted); font-size: 14px; font-weight: 600; }
+  .headline dd { margin: 0; }
+  .headline .big { display: block; margin: 4px 0 6px; font-size: clamp(40px, 4.4vw, 56px); font-weight: 700; line-height: 1; }
+  .headline .sub { display: block; color: var(--muted); font-size: 14px; line-height: 1.4; }
+  .headline .cost .big, .headline .cost dt { color: var(--alert); }
+  .headline-note { margin: 8px 0 22px; color: var(--muted); font-size: 14px; }
+
   .notice {
-    max-width: 820px;
-    margin: 0;
-    padding: 8px 12px;
-    border-left: 3px solid var(--alert);
-    background: var(--surface);
+    margin: 0 0 30px;
+    padding: 14px 18px;
+    border: 1px solid var(--alert);
+    border-left-width: 6px;
+    background: var(--alert-soft);
     color: var(--ink);
-    font-size: 14px;
+    font-size: 16px;
   }
+  .notice strong { color: var(--alert); }
+
   .workbench {
     display: grid;
-    grid-template-columns: minmax(190px, 224px) minmax(0, 1fr);
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
     gap: 18px;
     align-items: start;
   }
@@ -62,21 +101,23 @@
     min-width: 0;
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: 0;
   }
   .patient-panel { padding: 18px 14px; }
-  .patient-panel h2 { margin: 0 4px 12px; }
+  .patient-panel h2 { margin: 0 4px 4px; }
+  .group-label { margin: 14px 4px 6px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .group-label.fail { color: var(--alert); }
   .patients { display: grid; gap: 6px; }
   .patients button {
-    display: flex;
-    min-width: 0;
-    min-height: 48px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 6px 10px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2px 8px;
+    align-items: center;
+    width: 100%;
+    min-height: 56px;
+    padding: 8px 10px;
     border: 1px solid var(--line);
-    border-radius: 5px;
+    border-left: 5px solid var(--line);
+    border-radius: 4px;
     background: transparent;
     color: var(--ink);
     font: inherit;
@@ -84,144 +125,276 @@
     cursor: pointer;
     transition: background-color .12s ease, border-color .12s ease;
   }
-  .patients button:hover { background: rgba(17, 107, 117, .06); }
-  .patients button[aria-pressed="true"] {
-    border-color: var(--risk);
-    background: rgba(17, 107, 117, .09);
-  }
-  .patients button span { font-size: 14px; font-weight: 600; }
-  .patients button small { color: var(--muted); font-size: 12px; }
-  .chart-panel { padding: 18px 20px 16px; }
-  .chart-head {
-    display: flex;
-    min-height: 40px;
-    justify-content: space-between;
+  .patients button:hover { background: var(--ok-soft); }
+  .patients button[aria-pressed="true"] { border-color: var(--ink); background: var(--ok-soft); box-shadow: inset 0 0 0 1px var(--ink); }
+  .patients button .pid { font-family: var(--digits); font-size: 15px; font-weight: 700; }
+  .patients button svg { width: 72px; height: 28px; }
+  .badge { grid-column: 1 / -1; justify-self: start; padding: 1px 7px; border-radius: 3px; font-size: 13px; font-weight: 650; }
+  .o-caught { border-left-color: var(--risk) !important; }
+  .o-caught .badge { background: var(--ok-soft); color: var(--risk); }
+  .o-missed { border-left-color: var(--miss) !important; background: var(--miss-soft) !important; }
+  .o-missed .badge { background: var(--miss); color: #fff; }
+  .o-false { border-left-color: var(--alert) !important; background: var(--alert-soft) !important; }
+  .o-false .badge { background: var(--alert); color: #fff; }
+  .o-quiet .badge { background: var(--line); color: var(--ink); }
+  .patient-note { margin: 14px 4px 0; color: var(--muted); font-size: 14px; }
+
+  .chart-panel { padding: 0 0 18px; }
+  .monitor {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    gap: 6px 26px;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 4px;
+    padding: 14px 20px;
+    background: var(--monitor);
+    color: var(--monitor-ink);
   }
-  .chart-head p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
-  .controls { display: flex; flex: none; align-items: center; gap: 12px; }
+  .monitor .lbl { display: block; color: var(--monitor-dim); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .monitor .val { display: block; font: 700 34px/1.05 var(--digits); font-variant-numeric: tabular-nums; }
+  .monitor .val small { font-size: 16px; color: var(--monitor-dim); font-weight: 600; }
+  #risk-now.hot { color: #ff8f84; }
+  .alarm {
+    justify-self: start;
+    padding: 8px 12px;
+    border: 1px solid #36504f;
+    border-radius: 4px;
+    color: var(--monitor-dim);
+    font-size: 15px;
+    font-weight: 650;
+  }
+  .alarm.on { border-color: #ff6a5c; background: #b0362c; color: #fff; animation: pulse 1s ease-out 2; }
+  .alarm.early { border-color: #e0a654; background: #6b4106; color: #fff; }
+  @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(255, 106, 92, .7); } to { box-shadow: 0 0 0 14px rgba(255, 106, 92, 0); } }
+  .fa-counter { text-align: right; color: var(--monitor-dim); font-size: 13px; line-height: 1.35; }
+  .fa-counter b { display: block; color: #ff8f84; font: 700 22px/1.1 var(--digits); }
+
+  .chart-body { padding: 16px 20px 0; }
+  .chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 10px 16px; margin-bottom: 6px; }
+  .chart-head p { margin: 2px 0 0; color: var(--muted); font-size: 14px; max-width: 62ch; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
   .controls button {
-    min-height: 40px;
-    padding: 7px 14px;
+    min-height: 44px;
+    padding: 8px 18px;
     border: 1px solid var(--ink);
-    border-radius: 5px;
+    border-radius: 4px;
     background: var(--ink);
     color: var(--surface);
     font: inherit;
-    font-size: 14px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 650;
     cursor: pointer;
-    transition: background-color .12s ease, transform .12s ease;
   }
-  .controls button:hover { background: var(--risk); }
-  .controls button:active { transform: translateY(1px); }
-  #status { color: var(--muted); font-size: 13px; text-align: right; }
+  .controls button:hover { background: var(--risk); border-color: var(--risk); }
+  .scrub { display: grid; gap: 2px; min-width: 240px; }
+  .scrub label { color: var(--ink); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .scrub input { width: 100%; height: 28px; accent-color: var(--risk); }
   :focus-visible { outline: 3px solid var(--alert); outline-offset: 3px; }
-  .chart-wrap { min-width: 0; }
-  svg { display: block; width: 100%; height: 310px; overflow: visible; }
-  svg text { fill: var(--muted); font: 12px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  svg .alert-label { fill: var(--alert); font-size: 12px; font-weight: 650; }
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 20px;
-    margin-top: 0;
-    color: var(--ink);
-    font-size: 13px;
-  }
+  svg { display: block; overflow: visible; }
+  #chart { width: 100%; height: 340px; }
+  svg text { fill: var(--muted); font: 13px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .alert-label { fill: var(--alert); font-size: 14px; font-weight: 700; }
+  svg .onset-label { fill: var(--ink); font-size: 13px; font-weight: 650; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 4px; color: var(--ink); font-size: 14px; }
   .legend span { display: inline-flex; align-items: center; }
   .legend i { display: inline-block; width: 18px; height: 3px; margin-right: 7px; }
-  .legend .window-swatch { width: 12px; height: 12px; }
-  .stats {
+  .legend .window-swatch { width: 13px; height: 13px; border: 1px solid var(--line); }
+
+  .outcome {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: 1fr 1fr 1fr 1.6fr;
     margin: 18px 0 0;
     border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
   }
-  .stat { min-width: 0; padding: 12px 14px 0 0; }
-  .stat + .stat { padding-left: 14px; border-left: 1px solid var(--line); }
-  .stat dt { margin-bottom: 3px; color: var(--muted); font-size: 13px; }
-  .stat dd { margin: 0; color: var(--ink); font-size: 18px; font-weight: 620; font-variant-numeric: tabular-nums; }
-  footer {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px 20px;
-    margin-top: 22px;
-    color: var(--muted);
-    font-size: 13px;
+  .outcome > div { min-width: 0; padding: 12px 14px 14px 0; }
+  .outcome > div + div { padding-left: 14px; border-left: 1px solid var(--line); }
+  .outcome dt { color: var(--muted); font-size: 14px; font-weight: 600; }
+  .outcome dd { margin: 4px 0 0; font: 700 34px/1.05 var(--digits); font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
+  .outcome dd.word { font: 700 22px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: 0; }
+  .outcome .lead { background: var(--ok-soft); padding-right: 14px; }
+  .outcome .lead dt { color: var(--risk); font-weight: 750; }
+  .outcome .lead dd { font-size: 56px; color: var(--risk); }
+  .outcome .lead dd small { font-size: 22px; }
+  .outcome .lead p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .outcome .lead.bad { background: var(--alert-soft); }
+  .outcome .lead.bad dt, .outcome .lead.bad dd { color: var(--alert); }
+  .outcome .lead.miss { background: var(--miss-soft); }
+  .outcome .lead.miss dt, .outcome .lead.miss dd { color: var(--miss); }
+
+  .vitals { margin-top: 20px; }
+  .vitals-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; align-items: baseline; }
+  .vitals-head p { margin: 0; color: var(--muted); font-size: 14px; }
+  .vital { margin-top: 10px; }
+  .vital-top { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; }
+  .vital-top b { font-weight: 650; }
+  .vital-top span { font-family: var(--digits); font-variant-numeric: tabular-nums; font-weight: 700; }
+  .vital-top span small { color: var(--faint); font-family: system-ui, sans-serif; font-weight: 400; }
+  .vital svg { width: 100%; height: 40px; }
+
+  .explain {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 26px;
   }
-  footer a { color: var(--ink); text-underline-offset: 3px; }
-  footer a:hover { color: var(--risk); }
-  @media (max-width: 760px) {
-    main { padding: 24px 18px 36px; }
-    .workbench { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-    .patient-panel { padding: 14px; }
+  .explain section { padding: 18px; background: var(--surface); border: 1px solid var(--line); }
+  .explain section.limits { border-top: 4px solid var(--alert); }
+  .explain p, .explain li { color: var(--muted); font-size: 15px; }
+  .explain ul { margin: 0; padding-left: 18px; }
+  .explain li + li { margin-top: 6px; }
+  footer { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-top: 24px; color: var(--muted); font-size: 14px; }
+  footer a, .explain a { color: var(--ink); text-underline-offset: 3px; }
+
+  @media (max-width: 1080px) {
+    .explain { grid-template-columns: minmax(0, 1fr); }
+    .monitor { grid-template-columns: auto auto minmax(0, 1fr); }
+    .fa-counter { grid-column: 1 / -1; text-align: left; }
+  }
+  @media (max-width: 860px) {
+    main { padding: 26px 16px 36px; }
+    .headline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .headline > div:nth-child(3) { padding-left: 0; border-left: 0; }
+    .headline > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .workbench { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    .outcome { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .outcome > div:nth-child(3) { padding-left: 0; border-left: 0; }
+    .outcome > div:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .outcome .lead { padding-left: 14px; }
+  }
+  @media (max-width: 560px) {
+    .lede { font-size: 16px; }
+    .headline > div { padding-right: 10px; }
+    .headline > div + div { padding-left: 10px; }
+    .headline > div:nth-child(3) { padding-left: 0; }
+    .headline .sub { font-size: 13px; }
     .patients { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .chart-panel { padding: 15px 14px 14px; }
-    .chart-head { align-items: flex-start; }
-    .chart-head p { max-width: 35ch; }
-    svg { height: 280px; }
-  }
-  @media (max-width: 430px) {
-    main { padding-right: 14px; padding-left: 14px; }
-    h1 { font-size: 29px; }
-    .chart-head { flex-wrap: wrap; }
-    .controls { width: 100%; justify-content: space-between; }
-    #status { text-align: left; }
-    svg { height: 260px; }
-    .legend { gap: 8px 12px; font-size: 12px; }
-    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .stat { padding-right: 8px; padding-bottom: 10px; }
-    .stat + .stat { padding-left: 10px; }
-    .stat:nth-child(3) { padding-left: 0; border-left: 0; }
-    .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .patients button { grid-template-columns: minmax(0, 1fr); padding: 7px 8px; }
+    .patients button svg { width: 100%; }
+    .group-label { margin-top: 10px; }
+    .monitor { grid-template-columns: auto auto; padding: 12px 14px; gap: 8px 18px; }
+    .alarm { grid-column: 1 / -1; }
+    .monitor .val { font-size: 28px; }
+    .chart-body { padding: 14px 14px 0; }
+    .chart-panel { padding-bottom: 14px; }
+    .controls { width: 100%; flex-direction: column; align-items: stretch; }
+    .scrub { min-width: 0; }
+    #chart { height: 290px; }
+    .outcome dd { font-size: 28px; }
+    .outcome .lead dd { font-size: 44px; }
+    .outcome dd.word { font-size: 18px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   }
 </style>
 </head>
 <body>
 <main>
-  <header class="intro">
+  <header>
     <h1>Sepsis early warning</h1>
-    <p class="lede">A gradient-boosting model scores ICU patients every hour from vitals and labs,
-      aiming to flag sepsis up to 12 hours before clinical onset. Pick a real, held-out patient
-      from the PhysioNet 2019 Challenge data and watch the risk score build hour by hour.</p>
-    <p class="metric">Evaluation uses the <strong>PhysioNet 2019 utility metric</strong>.</p>
-    <p class="notice">Research demo on public de-identified data. Not a medical device; do not enter
-      real patient information.</p>
+    <p class="lede">A gradient-boosting model scores ICU patients every hour from routine vitals and labs and tries to
+      flag sepsis up to 12 hours before clinical onset. Below, real held-out patients from the PhysioNet 2019
+      Challenge are replayed hour by hour, including the cases where it fails.</p>
+
+    <!-- Test-set figures from artifacts/clinical_report.json and the README Results table
+         (4,441 held-out patients, threshold 0.32 picked by cross-validation on training patients). -->
+    <dl class="headline" aria-label="Held-out test results">
+      <div>
+        <dt>Challenge utility score</dt>
+        <dd><span class="big num">0.424</span>
+          <span class="sub">Official PhysioNet 2019 metric (1 is perfect). Internal one-hospital split, so not comparable to the leaderboard.</span></dd>
+      </div>
+      <div>
+        <dt>Septic patients flagged in time</dt>
+        <dd><span class="big num">93%</span>
+          <span class="sub">370 of 398, inside the −12h to +3h window. But 271 (68%) also alarmed earlier than the window.</span></dd>
+      </div>
+      <div>
+        <dt>Median warning before onset</dt>
+        <dd><span class="big num">12h</span>
+          <span class="sub">Among those flagged. 12h is the most the window allows; many were already alarming when it opened.</span></dd>
+      </div>
+      <div class="cost">
+        <dt>Non-septic falsely alarmed</dt>
+        <dd><span class="big num">59%</span>
+          <span class="sub">2,381 of 4,043 alarmed at least once. Hourly AUPRC is only 0.092 (AUROC 0.817).</span></dd>
+      </div>
+    </dl>
+    <p class="headline-note">Read the red figure first: the model catches most septic patients partly because it alarms on a lot of people.</p>
+
+    <p class="notice" role="note"><strong>Research demo, not a medical device.</strong> Built on public, de-identified
+      PhysioNet data and not validated for clinical use. Do not use it for clinical decisions or enter real patient
+      information. False alarms are common: most non-septic patients in the test set triggered at least one.</p>
   </header>
 
   <div class="workbench">
     <section class="patient-panel" aria-labelledby="patients-heading">
-      <h2 id="patients-heading">Choose a patient</h2>
-      <div class="patients" id="patients" role="group" aria-label="Demo patients"></div>
+      <h2 id="patients-heading">Held-out patients</h2>
+      <div id="patients" role="group" aria-label="Demo patients"></div>
+      <p class="patient-note">7 test patients picked by outcome type, not at random. 2 of them are failures.</p>
     </section>
 
     <section class="chart-panel" aria-labelledby="chart-heading">
-      <div class="chart-head">
-        <div>
-          <h2 id="chart-heading">Hourly risk</h2>
-          <p>Risk score against the alert threshold; first alert hour is marked.</p>
+      <div class="monitor" aria-label="Replay monitor">
+        <div><span class="lbl">ICU hour</span><span class="val" id="clock">--</span></div>
+        <div><span class="lbl">Risk now</span><span class="val" id="risk-now">--</span></div>
+        <div class="alarm" id="alarm" role="status" aria-live="polite">Waiting for data</div>
+        <div class="fa-counter">Across the test set<b>59 / 100</b>non-septic patients get a false alarm</div>
+      </div>
+      <div class="chart-body">
+        <div class="chart-head">
+          <div>
+            <h2 id="chart-heading">Hourly risk, <span id="chart-pid">…</span></h2>
+            <p id="chart-sub">Risk score against the alert threshold (0.32).</p>
+          </div>
+          <div class="controls">
+            <button id="replay" type="button">Replay</button>
+            <div class="scrub">
+              <label for="scrubber" id="scrub-label">Loading demo patients…</label>
+              <input id="scrubber" type="range" min="0" max="0" value="0" step="1" disabled>
+            </div>
+          </div>
         </div>
-        <div class="controls">
-          <button id="replay" type="button">Replay</button>
-          <span id="status" role="status" aria-live="polite">Loading demo patients…</span>
+        <svg id="chart" viewBox="0 0 900 340" role="img" aria-label="Hourly sepsis risk"></svg>
+        <div class="legend" aria-label="Chart key">
+          <span><i style="background:var(--risk)"></i>Hourly risk</span>
+          <span><i style="background:repeating-linear-gradient(90deg,var(--alert) 0 5px,transparent 5px 8px)"></i>Alert threshold 0.32</span>
+          <span><i style="background:var(--ink)"></i>Clinical onset</span>
+          <span><i class="window-swatch" style="background:var(--window)"></i>Useful alert window (−12h to +3h)</span>
+        </div>
+        <dl class="outcome" id="outcome" aria-label="Selected patient outcome"></dl>
+
+        <div class="vitals" aria-labelledby="vitals-heading">
+          <div class="vitals-head">
+            <h3 id="vitals-heading">What the model saw</h3>
+            <p>Raw measurements for this patient, on the same hour axis. Inputs, not an explanation of the score.</p>
+          </div>
+          <div id="vitals"></div>
         </div>
       </div>
-      <div class="chart-wrap">
-        <svg id="chart" viewBox="0 0 900 310" role="img" aria-label="Hourly sepsis risk"></svg>
-      </div>
-      <div class="legend" aria-label="Chart key">
-        <span><i style="background:var(--risk)"></i>Hourly risk</span>
-        <span><i style="background:var(--alert)"></i>Alert threshold</span>
-        <span><i style="background:var(--muted)"></i>Clinical onset</span>
-        <span><i class="window-swatch" style="background:var(--window)"></i>Useful alert window (−12h to +3h)</span>
-      </div>
-      <dl class="stats" id="stats" aria-label="Selected patient outcome"></dl>
+    </section>
+  </div>
+
+  <div class="explain">
+    <section>
+      <h3>How to read the chart</h3>
+      <p>The teal line is the model's risk score each hour. When it crosses the dashed red threshold an alert fires.
+        The shaded band is the window the Challenge metric rewards: 12 hours before clinical onset to 3 hours after.
+        An alert inside it counts as caught; an alert before it is too early to be useful.</p>
+    </section>
+    <section>
+      <h3>How it is scored</h3>
+      <p>The Challenge utility metric gives the most credit for alerts 6 to 12 hours before onset, penalizes late or
+        missed cases hard, and charges 0.05 for every false-alarm hour. Features at hour <i>t</i> only use data up to
+        <i>t</i>. Train and test are split by patient.</p>
+    </section>
+    <section class="limits">
+      <h3>Where it falls short</h3>
+      <ul>
+        <li>High alarm burden: 59% of non-septic test patients alarm at least once. A real deployment would need alert suppression or a stricter threshold.</li>
+        <li>Tested on one hospital system only; no external validation yet.</li>
+        <li>Probabilities are not calibrated. See the <a href="https://github.com/ShawnJoshua03/sepsis-early-warning#limitations">README limitations</a>.</li>
+      </ul>
     </section>
   </div>
 
@@ -233,10 +406,19 @@
 </main>
 
 <script>
-const H = 310, M = { l: 46, r: 18, t: 28, b: 38 };
-const svg = document.getElementById("chart");
-const statsEl = document.getElementById("stats");
-const statusEl = document.getElementById("status");
+const DEFAULT_ID = "p010983";  // clearest early rise among the 7 precomputed patients
+const M = { l: 46, r: 18, t: 30, b: 40 };
+const VITALS = [
+  ["HR", "Heart rate", "bpm", 0],
+  ["MAP", "Mean arterial pressure", "mmHg", 0],
+  ["Resp", "Respiratory rate", "/min", 0],
+  ["Temp", "Temperature", "°C", 1],
+  ["Lactate", "Lactate", "mmol/L", 1],
+  ["WBC", "White cell count", "×10³/µL", 1],
+];
+const $ = id => document.getElementById(id);
+const svg = $("chart"), scrubber = $("scrubber");
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let patients = [], current = null, timer = null, visibleCount = 0;
 
 const el = (tag, attrs, text) => {
@@ -247,129 +429,268 @@ const el = (tag, attrs, text) => {
 };
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
-function draw(res, p, shown) {
-  const box = svg.getBoundingClientRect();
-  const width = Math.max(320, box.width || 900);
-  const height = Math.max(240, box.height || H);
-  const m = { ...M, l: width < 400 ? 42 : M.l, r: width < 400 ? 12 : M.r };
-  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  svg.replaceChildren();
+// Outcome by the metric's rules: caught = any alarm inside [onset-12, onset+3].
+function outcomeOf(p) {
+  const res = p.result;
+  if (!res) {
+    const k = p.kind.toLowerCase();
+    return { key: k.includes("false") ? "false" : k.includes("not caught") ? "missed"
+      : k.includes("caught") ? "caught" : "quiet" };
+  }
+  const hours = p.records.map(r => r.ICULOS), thr = res.threshold, onset = p.onset_iculos;
+  const alarmHours = hours.filter((h, i) => res.hourly_risk[i] >= thr);
+  const first = alarmHours.length ? alarmHours[0] : null;
+  if (onset == null) return { key: first == null ? "quiet" : "false", first };
+  const inWin = alarmHours.filter(h => h >= onset - 12 && h <= onset + 3);
+  const early = alarmHours.filter(h => h < onset - 12);
+  return { key: inWin.length ? "caught" : "missed", first, inWindow: inWin[0] ?? null,
+    early: early[0] ?? null, onset };
+}
+const BADGE = { caught: "Caught in time", missed: "Missed", false: "False alarm", quiet: "Correctly quiet" };
+
+function xScale(p, width, m) {
   const hours = p.records.map(r => r.ICULOS);
   const x0 = Math.min(...hours), x1 = Math.max(...hours, p.onset_iculos ?? 0);
-  const x = h => m.l + (h - x0) / Math.max(1, x1 - x0) * (width - m.l - m.r);
-  const y = v => m.t + (1 - v) * (height - m.t - m.b);
+  return { hours, x0, x1, x: h => m.l + (h - x0) / Math.max(1, x1 - x0) * (width - m.l - m.r) };
+}
+function margins(width) { return { ...M, l: width < 400 ? 40 : M.l, r: width < 400 ? 12 : M.r }; }
 
-  if (p.onset_iculos != null) {
-    const a = Math.max(x0, p.onset_iculos - 12), b = Math.min(x1, p.onset_iculos + 3);
+function draw(res, p, shown) {
+  const box = svg.getBoundingClientRect();
+  const width = Math.max(300, box.width || 900), height = Math.max(240, box.height || 340);
+  const m = margins(width);
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
+  svg.replaceChildren();
+  const { hours, x0, x1, x } = xScale(p, width, m);
+  const y = v => m.t + (1 - v) * (height - m.t - m.b);
+  const onset = p.onset_iculos;
+
+  if (onset != null) {
+    const a = Math.max(x0, onset - 12), b = Math.min(x1, onset + 3);
     svg.append(el("rect", { x: x(a), y: m.t, width: Math.max(0, x(b) - x(a)),
       height: height - m.t - m.b, fill: css("--window") }));
   }
   for (const v of [0, .25, .5, .75, 1]) {
-    svg.append(el("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v),
-      stroke: css("--line") }));
+    svg.append(el("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v), stroke: css("--line") }));
     svg.append(el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, v.toFixed(2)));
   }
-  const step = Math.ceil((x1 - x0) / 10 / 6) * 6 || 6;
+  const step = Math.ceil((x1 - x0) / (width < 500 ? 5 : 10) / 6) * 6 || 6;
   for (let h = Math.ceil(x0 / step) * step; h <= x1; h += step) {
-    svg.append(el("line", { x1: x(h), x2: x(h), y1: m.t, y2: height - m.b,
-      stroke: css("--line"), "stroke-opacity": ".48" }));
-    svg.append(el("text", { x: x(h), y: height - 15, "text-anchor": "middle" }, h + "h"));
+    svg.append(el("text", { x: x(h), y: height - 18, "text-anchor": "middle" }, h + "h"));
   }
   svg.append(el("text", { x: width - m.r, y: height - 1, "text-anchor": "end" }, "hours in ICU"));
-
   svg.append(el("line", { x1: m.l, x2: width - m.r, y1: y(res.threshold), y2: y(res.threshold),
-    stroke: css("--alert"), "stroke-dasharray": "5 4", "stroke-width": 1.75 }));
-  if (p.onset_iculos != null && p.onset_iculos <= x1)
-    svg.append(el("line", { x1: x(p.onset_iculos), x2: x(p.onset_iculos), y1: m.t, y2: height - m.b,
-      stroke: css("--muted"), "stroke-width": 2 }));
+    stroke: css("--alert"), "stroke-dasharray": "6 4", "stroke-width": 2 }));
+  if (onset != null && onset <= x1) {
+    svg.append(el("line", { x1: x(onset), x2: x(onset), y1: m.t, y2: height - m.b,
+      stroke: css("--ink"), "stroke-width": 2 }));
+    svg.append(el("text", { x: x(onset) + (x(onset) > width - 80 ? -6 : 6), y: height - m.b - 8,
+      "text-anchor": x(onset) > width - 80 ? "end" : "start", class: "onset-label" }, "Onset " + onset + "h"));
+  }
 
-  const pts = res.hourly_risk.slice(0, shown).map((v, i) => `${x(hours[i])},${y(v)}`).join(" ");
+  const vis = res.hourly_risk.slice(0, shown);
+  const pts = vis.map((v, i) => `${x(hours[i])},${y(v)}`).join(" ");
   svg.append(el("polyline", { points: pts, fill: "none", stroke: css("--risk"),
-    "stroke-width": 2.75, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+    "stroke-width": 3, "stroke-linejoin": "round", "stroke-linecap": "round" }));
+  if (shown > 0) {
+    const i = shown - 1;
+    svg.append(el("circle", { cx: x(hours[i]), cy: y(vis[i]), r: 4.5, fill: css("--risk") }));
+  }
+
+  const o = outcomeOf(p);
+  // Bracket the warning gained: in-window alert -> onset (the payoff of the chart).
+  if (o.inWindow != null && o.inWindow < onset && hours.indexOf(o.inWindow) < shown) {
+    const lastH = hours[shown - 1], end = Math.min(onset, lastH);
+    const yb = y(1) + 2;
+    if (end > o.inWindow) {
+      svg.append(el("line", { x1: x(o.inWindow), x2: x(end), y1: yb, y2: yb,
+        stroke: css("--risk"), "stroke-width": 5 }));
+      const label = `${end - o.inWindow}h warning${end < onset ? " so far" : " before onset"}`;
+      const half = label.length * 4.2;
+      const mid = Math.min(width - m.r - half, Math.max(m.l + half, (x(o.inWindow) + x(end)) / 2));
+      svg.append(el("text", { x: mid, y: yb - 8, "text-anchor": "middle", class: "onset-label",
+        style: `fill:${css("--risk")};font-size:14px;font-weight:750` }, label));
+    }
+  }
   const firstIdx = res.hourly_risk.findIndex(v => v >= res.threshold);
   if (firstIdx >= 0 && firstIdx < shown) {
     const cx = x(hours[firstIdx]), cy = y(res.hourly_risk[firstIdx]);
-    svg.append(el("line", { x1: cx, x2: cx, y1: m.t + 5, y2: height - m.b,
-      stroke: css("--alert"), "stroke-width": 1.5, "stroke-opacity": ".55" }));
-    svg.append(el("circle", { cx, cy, r: 6, fill: css("--alert"), stroke: css("--surface"),
-      "stroke-width": 2.5 }));
-    const anchor = cx > width - 126 ? "end" : "start";
-    const labelX = anchor === "end" ? cx - 9 : cx + 9;
-    svg.append(el("text", { x: labelX, y: m.t + 1, "text-anchor": anchor, class: "alert-label" },
-      `First alert ${hours[firstIdx]}h`));
+    svg.append(el("line", { x1: cx, x2: cx, y1: m.t + 22, y2: height - m.b,
+      stroke: css("--alert"), "stroke-width": 1.5, "stroke-opacity": ".6" }));
+    svg.append(el("circle", { cx, cy, r: 7, fill: css("--alert"), stroke: css("--surface"), "stroke-width": 2.5 }));
+    const anchor = cx > width - 140 ? "end" : "start";
+    svg.append(el("text", { x: anchor === "end" ? cx - 9 : cx + 9, y: m.t + 34, "text-anchor": anchor,
+      class: "alert-label" }, `First alert ${hours[firstIdx]}h`));
   }
   const alert = res.first_alert_hour == null ? "no alert" : `first alert at ${res.first_alert_hour} hours`;
   svg.setAttribute("aria-label", `Hourly sepsis risk for patient ${p.id}; ${alert}.`);
 }
 
-function stats(res, p) {
-  const onset = p.onset_iculos, alert = res.first_alert_hour;
-  let outcome;
-  if (onset == null) outcome = alert == null ? "Correctly quiet" : "False alarm";
-  else if (alert == null) outcome = "Missed";
-  else if (alert < onset - 12) outcome = "Alarm before window";
-  else if (alert <= onset + 3) outcome = "Caught in window";
-  else outcome = "Too late";
-  const items = [
-    [outcome, "Outcome"],
-    [alert == null ? "none" : alert + "h", "First alert"],
-    [onset == null ? "not septic" : onset + "h", "Clinical onset"],
-    [onset != null && alert != null ? (onset - alert) + "h" : "n/a", "Warning before onset"],
-  ];
-  statsEl.replaceChildren(...items.map(([value, label]) => {
-    const item = document.createElement("div"); item.className = "stat";
-    const dt = document.createElement("dt"), dd = document.createElement("dd");
-    dt.textContent = label; dd.textContent = value;
-    item.append(dt, dd);
-    return item;
-  }));
+function drawVitals(p, shown) {
+  const wrap = $("vitals");
+  wrap.replaceChildren();
+  const hours = p.records.map(r => r.ICULOS), nowH = hours[shown - 1];
+  for (const [key, name, unit, dp] of VITALS) {
+    const pts = p.records.filter(r => r[key] != null).map(r => [r.ICULOS, r[key]]);
+    if (!pts.length && (key === "Lactate" || key === "WBC")) continue;
+    const row = document.createElement("div"); row.className = "vital";
+    const top = document.createElement("div"); top.className = "vital-top";
+    const b = document.createElement("b"); b.textContent = name;
+    const s = document.createElement("span");
+    const seen = pts.filter(([h]) => h <= nowH);
+    if (!pts.length) { s.innerHTML = "<small>never measured</small>"; }
+    else if (!seen.length) { s.innerHTML = "<small>not measured yet</small>"; }
+    else {
+      const [h, v] = seen[seen.length - 1];
+      s.textContent = v.toFixed(dp) + " " + unit;
+      if (h < nowH) { const sm = document.createElement("small"); sm.textContent = ` (${nowH - h}h ago)`; s.append(sm); }
+    }
+    top.append(b, s);
+    const sv = el("svg", { role: "img", "aria-label": `${name} over time` });
+    row.append(top, sv);
+    wrap.append(row);
+    const width = Math.max(300, sv.getBoundingClientRect().width || 800), height = 40;
+    sv.setAttribute("viewBox", `0 0 ${width} ${height}`);
+    if (!pts.length) continue;
+    const m = margins($("chart").getBoundingClientRect().width || 900);
+    const { x } = xScale(p, width, m);
+    const vals = pts.map(d => d[1]);
+    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (hi - lo < 1e-6) { lo -= 1; hi += 1; }
+    const y = v => 4 + (1 - (v - lo) / (hi - lo)) * (height - 8);
+    sv.append(el("line", { x1: m.l, x2: width - m.r, y1: height - 1, y2: height - 1, stroke: css("--line") }));
+    if (p.onset_iculos != null)
+      sv.append(el("line", { x1: x(p.onset_iculos), x2: x(p.onset_iculos), y1: 0, y2: height, stroke: css("--ink"), "stroke-width": 1.5 }));
+    // Split into runs so long unmeasured stretches show as gaps, not invented lines.
+    const runs = arr => arr.reduce((acc, d, i) => {
+      if (!i || d[0] - arr[i - 1][0] > 8) acc.push([]);
+      acc[acc.length - 1].push(d); return acc;
+    }, []);
+    const line = (arr, attrs) => { for (const run of runs(arr))
+      if (run.length === 1) sv.append(el("circle", { cx: x(run[0][0]), cy: y(run[0][1]), r: 2, fill: attrs.stroke }));
+      else sv.append(el("polyline", { points: run.map(([h, v]) => `${x(h)},${y(v)}`).join(" "), fill: "none", ...attrs })); };
+    line(pts, { stroke: css("--faint"), "stroke-width": 1.25, "stroke-opacity": ".45" });
+    if (seen.length) {
+      line(seen, { stroke: css("--ink"), "stroke-width": 2, "stroke-linejoin": "round" });
+      if (seen.length < 16) for (const [h, v] of seen) sv.append(el("circle", { cx: x(h), cy: y(v), r: 2.5, fill: css("--ink") }));
+    }
+    sv.append(el("line", { x1: x(nowH), x2: x(nowH), y1: 0, y2: height, stroke: css("--risk"), "stroke-width": 2 }));
+  }
 }
 
-async function select(p) {
+function tile(label, value, cls, word) {
+  const d = document.createElement("div"); if (cls) d.className = cls;
+  const dt = document.createElement("dt"), dd = document.createElement("dd");
+  dt.textContent = label; dd.textContent = value; if (word) dd.className = "word";
+  d.append(dt, dd); return [d, dd];
+}
+
+function render(p, shown) {
+  const res = p.result, n = res.hourly_risk.length, hours = p.records.map(r => r.ICULOS);
+  const nowH = hours[shown - 1], done = shown >= n, o = outcomeOf(p), onset = p.onset_iculos;
+  visibleCount = shown;
+  draw(res, p, shown);
+  drawVitals(p, shown);
+  scrubber.max = n - 1; scrubber.value = shown - 1;
+  $("scrub-label").textContent = `Patient ${p.id}, hour ${nowH} of ${hours[n - 1]}`;
+
+  const risk = res.hourly_risk[shown - 1];
+  $("clock").innerHTML = `${nowH}<small> / ${hours[n - 1]}</small>`;
+  $("risk-now").textContent = risk.toFixed(2);
+  $("risk-now").classList.toggle("hot", risk >= res.threshold);
+  const alarm = $("alarm");
+  const fired = o.first != null && o.first <= nowH;
+  alarm.className = "alarm";
+  if (!fired) alarm.textContent = onset != null && nowH >= onset ? "No alert, sepsis onset passed" : "No alert";
+  else if (onset == null) { alarm.classList.add("on"); alarm.textContent = `ALERT at ${o.first}h. Ground truth: never septic (false alarm)`; }
+  else if (o.inWindow != null && o.inWindow <= nowH) { alarm.classList.add("on"); alarm.textContent = `ALERT at ${o.inWindow}h, inside the useful window`; }
+  else { alarm.classList.add("early"); alarm.textContent = `Alarm at ${o.first}h, too early to count (window opens ${onset - 12}h)`; }
+
+  // Outcome tiles fill in as the replay reaches each event.
+  const out = $("outcome");
+  const items = [
+    tile("Outcome", done ? BADGE[o.key] : "Replaying…", null, true)[0],
+    tile("First alarm", fired ? o.first + "h" : "—")[0],
+    tile("Clinical onset", onset == null ? "none" : nowH >= onset ? onset + "h" : "—", null, onset == null)[0],
+  ];
+  const [lead, leadDd] = tile("Warning before onset", "", "lead");
+  const note = document.createElement("p");
+  if (onset == null) {
+    lead.classList.add(o.key === "false" ? "bad" : "x");
+    const alarmHrs = res.hourly_risk.slice(0, shown).filter(v => v >= res.threshold).length;
+    lead.querySelector("dt").textContent = "False-alarm hours";
+    leadDd.textContent = alarmHrs + "h";
+    note.textContent = o.key === "false"
+      ? "Hours above the threshold so far, though this patient never developed sepsis."
+      : "Never above the threshold. This patient was not septic.";
+  } else if (o.inWindow != null && o.inWindow <= nowH) {
+    const gained = Math.min(onset, nowH) - o.inWindow;
+    if (o.inWindow > onset) { leadDd.innerHTML = `${o.inWindow - onset}h<small> late</small>`; note.textContent = "Alert came after onset, still inside the +3h window."; }
+    else { leadDd.innerHTML = `${gained}h<small>${nowH < onset ? " so far" : ""}</small>`; note.textContent = nowH < onset ? "Counting until clinical onset." : `Alert ${gained}h before clinical onset.`; }
+  } else if (o.key === "missed" && (done || nowH > onset + 3)) {
+    lead.classList.add("miss"); leadDd.textContent = "0h";
+    note.textContent = o.early != null ? `Only alarmed at ${o.early}h, before the window, then went quiet.` : "Never alarmed in the useful window.";
+  } else { leadDd.textContent = "—"; note.textContent = "Waiting for an alert in the window."; }
+  lead.append(note);
+  out.replaceChildren(...items, lead);
+
+  if (done) clearInterval(timer);
+}
+
+async function select(p, animate = true) {
   current = p;
   for (const b of document.querySelectorAll("#patients button"))
     b.setAttribute("aria-pressed", b.dataset.id === p.id);
-  statusEl.textContent = "Scoring…";
+  $("chart-pid").textContent = p.id;
+  const o = outcomeOf(p);
+  $("chart-sub").textContent = `${BADGE[o.key]}. Risk score against the alert threshold (0.32).`
+    + (p.id === DEFAULT_ID ? " Shown first because its rise is clearer than most; try the failure cases too." : "");
+  $("scrub-label").textContent = "Scoring…";
   clearInterval(timer);
-  if (p.result) { play(p); return; }  // static build: scores precomputed by the model
-  try {
-    const r = await fetch("score", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ records: p.records }) });
-    if (!r.ok) throw new Error(r.status);
-    p.result = await r.json();
-    play(p);
-  } catch (e) {
-    statusEl.textContent = "Scoring failed (" + e.message + "). Is the API server running?";
+  if (!p.result) {
+    try {
+      const r = await fetch("score", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ records: p.records }) });
+      if (!r.ok) throw new Error(r.status);
+      p.result = await r.json();
+    } catch (e) {
+      $("scrub-label").textContent = "Scoring failed (" + e.message + "). Is the API server running?";
+      return;
+    }
   }
+  scrubber.disabled = false;
+  play(p, animate);
 }
 
-function play(p) {
+function play(p, animate = true) {
   clearInterval(timer);
-  const res = p.result, n = res.hourly_risk.length;
+  const n = p.result.hourly_risk.length;
+  if (!animate || reduceMotion) { render(p, n); return; }
   let shown = 1;
-  visibleCount = shown;
-  statsEl.replaceChildren();
-  const tick = () => {
-    visibleCount = shown;
-    draw(res, p, shown);
-    statusEl.textContent = `Patient ${p.id} — hour ${p.records[shown - 1].ICULOS} of ${p.records[n - 1].ICULOS}`;
-    if (shown >= n) { clearInterval(timer); stats(res, p); return; }
-    shown++;
-  };
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    shown = n;
-    tick();
-    return;
-  }
-  tick();
-  timer = setInterval(tick, Math.max(25, 2400 / n));
+  render(p, shown);
+  timer = setInterval(() => { shown++; render(p, Math.min(shown, n)); if (shown >= n) clearInterval(timer); },
+    Math.max(40, Math.min(110, 5000 / n)));
 }
 
-document.getElementById("replay").onclick = () => current?.result && play(current);
-
-window.addEventListener("resize", () => {
-  if (current?.result && visibleCount) draw(current.result, current, visibleCount);
+$("replay").onclick = () => current?.result && play(current, true);
+scrubber.addEventListener("input", () => {
+  if (!current?.result) return;
+  clearInterval(timer);
+  render(current, +scrubber.value + 1);
 });
+window.addEventListener("resize", () => {
+  if (current?.result && visibleCount) render(current, visibleCount);
+});
+
+function miniSpark(p) {
+  const r = p.result.hourly_risk, w = 72, h = 30, thr = p.result.threshold;
+  const s = el("svg", { viewBox: `0 0 ${w} ${h}`, "aria-hidden": "true" });
+  const x = i => i / Math.max(1, r.length - 1) * w, y = v => 2 + (1 - Math.min(1, v / .8)) * (h - 4);
+  s.append(el("line", { x1: 0, x2: w, y1: y(thr), y2: y(thr), stroke: css("--alert"), "stroke-dasharray": "3 2" }));
+  s.append(el("polyline", { points: r.map((v, i) => `${x(i)},${y(v)}`).join(" "), fill: "none",
+    stroke: css("--risk"), "stroke-width": 1.75 }));
+  return s;
+}
 
 fetch("static/demo_patients.json").then(r => {
   if (!r.ok) throw new Error(r.status);
@@ -377,21 +698,36 @@ fetch("static/demo_patients.json").then(r => {
 }).then(list => {
   patients = list;
   if (list.some(p => p.result))
-    document.getElementById("api-note").textContent =
-      "Scores precomputed by the trained model; run the live API locally (see README).";
-  const wrap = document.getElementById("patients");
-  for (const p of list) {
-    const b = document.createElement("button");
-    b.type = "button"; b.dataset.id = p.id; b.setAttribute("aria-pressed", "false");
-    b.innerHTML = "<span></span><small></small>";
-    b.children[0].textContent = p.id;
-    b.children[1].textContent = p.kind;
-    b.onclick = () => select(p);
-    wrap.append(b);
+    $("api-note").textContent = "Scores precomputed by the trained model; run the live API locally (see README).";
+  const wrap = $("patients");
+  const groups = [["Caught", ["caught"], ""], ["Where it fails", ["missed", "false"], "fail"], ["Correctly quiet", ["quiet"], ""]];
+  for (const [title, keys, cls] of groups) {
+    const members = list.filter(p => keys.includes(outcomeOf(p).key));
+    if (!members.length) continue;
+    const h = document.createElement("p"); h.className = "group-label " + cls; h.textContent = `${title} (${members.length})`;
+    const g = document.createElement("div"); g.className = "patients";
+    for (const p of members) {
+      const o = outcomeOf(p);
+      const b = document.createElement("button");
+      b.type = "button"; b.dataset.id = p.id; b.setAttribute("aria-pressed", "false");
+      b.className = "o-" + o.key;
+      const id = document.createElement("span"); id.className = "pid"; id.textContent = p.id;
+      const badge = document.createElement("span"); badge.className = "badge";
+      badge.textContent = o.key === "caught" && o.inWindow != null && o.inWindow <= o.onset
+        ? `Caught ${o.onset - o.inWindow}h early` : o.key === "caught" ? `Caught ${o.inWindow - o.onset}h after onset` : BADGE[o.key];
+      b.append(id);
+      if (p.result) b.append(miniSpark(p));
+      b.append(badge);
+      b.setAttribute("aria-label", `${p.id}: ${p.kind}`);
+      b.onclick = () => select(p);
+      g.append(b);
+    }
+    wrap.append(h, g);
   }
-  select(list[0]);
+  const wanted = location.hash.slice(1) || DEFAULT_ID;  // e.g. #p017394 links straight to a case
+  select(list.find(p => p.id === wanted) || list.find(p => p.id === DEFAULT_ID) || list[0]);
 }).catch(() => {
-  statusEl.textContent = "Could not load demo patients. Check the local demo data file and reload.";
+  $("scrub-label").textContent = "Could not load demo patients. Check the local demo data file and reload.";
 });
 </script>
 </body>
