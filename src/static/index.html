@@ -6,84 +6,238 @@
 <title>Sepsis Early Warning demo</title>
 <style>
   :root {
-    --bg: #f7f7f5; --panel: #fff; --ink: #1c1f23; --muted: #646b73; --line: #e2e3e0;
-    --risk: #2457c5; --thr: #b4232c; --window: rgba(36, 160, 90, .13); --onset: #1f8a4c;
+    color-scheme: light dark;
+    --paper: #eef2f1;
+    --surface: #fafcfb;
+    --ink: #193336;
+    --muted: #53686a;
+    --risk: #116b75;
+    --alert: #b3443b;
+    --line: rgba(25, 51, 54, .16);
+    --window: rgba(17, 107, 117, .10);
   }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #131517; --panel: #1b1e21; --ink: #e8eaec; --muted: #9aa1a8; --line: #2c3035;
-      --risk: #7fa6ff; --thr: #ff6b6b; --window: rgba(80, 200, 130, .14); --onset: #5ed18f; }
+    :root {
+      --paper: #141d1e;
+      --surface: #1d292a;
+      --ink: #e9f1f0;
+      --muted: #b5c4c2;
+      --risk: #63b8c0;
+      --alert: #f18177;
+      --line: rgba(233, 241, 240, .18);
+      --window: rgba(99, 184, 192, .14);
+    }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--ink);
-    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
-  main { max-width: 980px; margin: 0 auto; padding: 32px 16px 48px; }
-  h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -.01em; }
-  .lede { color: var(--muted); margin: 0 0 20px; max-width: 70ch; }
-  .note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--line);
-    padding: 2px 10px; margin: 0 0 24px; }
-  .patients { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-  .patients button { font: inherit; font-size: 13px; padding: 7px 12px; border-radius: 8px;
-    border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
-  .patients button[aria-pressed="true"] { border-color: var(--risk); box-shadow: inset 0 0 0 1px var(--risk); }
-  .patients small { display: block; color: var(--muted); font-size: 11px; }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-  .chart-wrap { overflow-x: auto; }
-  svg { display: block; width: 100%; min-width: 520px; height: auto; }
-  svg text { fill: var(--muted); font-size: 11px; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 14px; }
-  .stat { border-top: 1px solid var(--line); padding-top: 8px; }
-  .stat b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
-  .stat span { color: var(--muted); font-size: 12px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .legend i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; }
-  .controls { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
-  .controls button { font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 6px;
-    border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
-  #status { color: var(--muted); font-size: 13px; }
-  footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
-  footer a { color: inherit; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main { max-width: 1280px; margin: 0 auto; padding: 34px 24px 48px; }
+  h1, h2, p { margin-top: 0; }
+  h1 { max-width: 18ch; margin-bottom: 10px; font-size: 32px; line-height: 1.12; letter-spacing: -.025em; }
+  h2 { margin-bottom: 0; font-size: 17px; line-height: 1.3; font-weight: 620; }
+  .intro { max-width: 920px; margin-bottom: 26px; }
+  .lede { max-width: 76ch; margin-bottom: 14px; font-size: 16px; }
+  .metric { margin-bottom: 14px; color: var(--muted); }
+  .metric strong { color: var(--ink); font-weight: 600; }
+  .notice {
+    max-width: 820px;
+    margin: 0;
+    padding: 8px 12px;
+    border-left: 3px solid var(--alert);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 14px;
+  }
+  .workbench {
+    display: grid;
+    grid-template-columns: minmax(190px, 224px) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+  .patient-panel, .chart-panel {
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 0;
+  }
+  .patient-panel { padding: 18px 14px; }
+  .patient-panel h2 { margin: 0 4px 12px; }
+  .patients { display: grid; gap: 6px; }
+  .patients button {
+    display: flex;
+    min-width: 0;
+    min-height: 48px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .12s ease, border-color .12s ease;
+  }
+  .patients button:hover { background: rgba(17, 107, 117, .06); }
+  .patients button[aria-pressed="true"] {
+    border-color: var(--risk);
+    background: rgba(17, 107, 117, .09);
+  }
+  .patients button span { font-size: 14px; font-weight: 600; }
+  .patients button small { color: var(--muted); font-size: 12px; }
+  .chart-panel { padding: 18px 20px 16px; }
+  .chart-head {
+    display: flex;
+    min-height: 40px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .chart-head p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+  .controls { display: flex; flex: none; align-items: center; gap: 12px; }
+  .controls button {
+    min-height: 40px;
+    padding: 7px 14px;
+    border: 1px solid var(--ink);
+    border-radius: 5px;
+    background: var(--ink);
+    color: var(--surface);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .12s ease, transform .12s ease;
+  }
+  .controls button:hover { background: var(--risk); }
+  .controls button:active { transform: translateY(1px); }
+  #status { color: var(--muted); font-size: 13px; text-align: right; }
+  :focus-visible { outline: 3px solid var(--alert); outline-offset: 3px; }
+  .chart-wrap { min-width: 0; }
+  svg { display: block; width: 100%; height: 310px; overflow: visible; }
+  svg text { fill: var(--muted); font: 12px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  svg .alert-label { fill: var(--alert); font-size: 12px; font-weight: 650; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 0;
+    color: var(--ink);
+    font-size: 13px;
+  }
+  .legend span { display: inline-flex; align-items: center; }
+  .legend i { display: inline-block; width: 18px; height: 3px; margin-right: 7px; }
+  .legend .window-swatch { width: 12px; height: 12px; }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 18px 0 0;
+    border-top: 1px solid var(--line);
+  }
+  .stat { min-width: 0; padding: 12px 14px 0 0; }
+  .stat + .stat { padding-left: 14px; border-left: 1px solid var(--line); }
+  .stat dt { margin-bottom: 3px; color: var(--muted); font-size: 13px; }
+  .stat dd { margin: 0; color: var(--ink); font-size: 18px; font-weight: 620; font-variant-numeric: tabular-nums; }
+  footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin-top: 22px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  footer a { color: var(--ink); text-underline-offset: 3px; }
+  footer a:hover { color: var(--risk); }
+  @media (max-width: 760px) {
+    main { padding: 24px 18px 36px; }
+    .workbench { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .patient-panel { padding: 14px; }
+    .patients { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .chart-panel { padding: 15px 14px 14px; }
+    .chart-head { align-items: flex-start; }
+    .chart-head p { max-width: 35ch; }
+    svg { height: 280px; }
+  }
+  @media (max-width: 430px) {
+    main { padding-right: 14px; padding-left: 14px; }
+    h1 { font-size: 29px; }
+    .chart-head { flex-wrap: wrap; }
+    .controls { width: 100%; justify-content: space-between; }
+    #status { text-align: left; }
+    svg { height: 260px; }
+    .legend { gap: 8px 12px; font-size: 12px; }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .stat { padding-right: 8px; padding-bottom: 10px; }
+    .stat + .stat { padding-left: 10px; }
+    .stat:nth-child(3) { padding-left: 0; border-left: 0; }
+    .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
 <main>
-  <h1>Sepsis Early Warning</h1>
-  <p class="lede">A gradient-boosting model scores ICU patients every hour from vitals and labs,
-    aiming to flag sepsis up to 12 hours before clinical onset. Pick a real, held-out patient
-    from the PhysioNet 2019 Challenge data and watch the risk score build hour by hour.</p>
-  <p class="note">Research demo on public de-identified data. Not a medical device; do not enter
-    real patient information.</p>
+  <header class="intro">
+    <h1>Sepsis early warning</h1>
+    <p class="lede">A gradient-boosting model scores ICU patients every hour from vitals and labs,
+      aiming to flag sepsis up to 12 hours before clinical onset. Pick a real, held-out patient
+      from the PhysioNet 2019 Challenge data and watch the risk score build hour by hour.</p>
+    <p class="metric">Evaluation uses the <strong>PhysioNet 2019 utility metric</strong>.</p>
+    <p class="notice">Research demo on public de-identified data. Not a medical device; do not enter
+      real patient information.</p>
+  </header>
 
-  <div class="patients" id="patients" role="group" aria-label="Demo patients"></div>
+  <div class="workbench">
+    <section class="patient-panel" aria-labelledby="patients-heading">
+      <h2 id="patients-heading">Choose a patient</h2>
+      <div class="patients" id="patients" role="group" aria-label="Demo patients"></div>
+    </section>
 
-  <section class="panel">
-    <div class="controls">
-      <button id="replay" type="button">Replay</button>
-      <span id="status">Loading…</span>
-    </div>
-    <div class="chart-wrap"><svg id="chart" viewBox="0 0 900 320" role="img"
-      aria-label="Hourly sepsis risk"></svg></div>
-    <div class="legend">
-      <span><i style="background:var(--risk)"></i>Hourly risk</span>
-      <span><i style="background:var(--thr)"></i>Alert threshold</span>
-      <span><i style="background:var(--onset)"></i>Clinical onset</span>
-      <span><i style="background:var(--window);height:10px"></i>Useful alert window (−12h to +3h)</span>
-    </div>
-    <div class="stats" id="stats"></div>
-  </section>
+    <section class="chart-panel" aria-labelledby="chart-heading">
+      <div class="chart-head">
+        <div>
+          <h2 id="chart-heading">Hourly risk</h2>
+          <p>Risk score against the alert threshold; first alert hour is marked.</p>
+        </div>
+        <div class="controls">
+          <button id="replay" type="button">Replay</button>
+          <span id="status" role="status" aria-live="polite">Loading demo patients…</span>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <svg id="chart" viewBox="0 0 900 310" role="img" aria-label="Hourly sepsis risk"></svg>
+      </div>
+      <div class="legend" aria-label="Chart key">
+        <span><i style="background:var(--risk)"></i>Hourly risk</span>
+        <span><i style="background:var(--alert)"></i>Alert threshold</span>
+        <span><i style="background:var(--muted)"></i>Clinical onset</span>
+        <span><i class="window-swatch" style="background:var(--window)"></i>Useful alert window (−12h to +3h)</span>
+      </div>
+      <dl class="stats" id="stats" aria-label="Selected patient outcome"></dl>
+    </section>
+  </div>
 
   <footer>
-    Data: Reyna et al., <a href="https://doi.org/10.13026/v64v-d857">PhysioNet/CinC Challenge 2019</a>
-    (CC BY 4.0). <span id="api-note">API docs at <a href="docs">/docs</a>.</span>
-    Code: <a href="https://github.com/ShawnJoshua03/sepsis-early-warning">GitHub</a>.
+    <span>Data: Reyna et al., <a href="https://doi.org/10.13026/v64v-d857">PhysioNet/CinC Challenge 2019</a> (CC BY 4.0).</span>
+    <span id="api-note">API docs at <a href="docs">/docs</a>.</span>
+    <span>Code: <a href="https://github.com/ShawnJoshua03/sepsis-early-warning">GitHub</a>.</span>
   </footer>
 </main>
 
 <script>
-const W = 900, H = 320, M = { l: 44, r: 16, t: 14, b: 34 };
+const H = 310, M = { l: 46, r: 18, t: 28, b: 38 };
 const svg = document.getElementById("chart");
 const statsEl = document.getElementById("stats");
 const statusEl = document.getElementById("status");
-let patients = [], current = null, timer = null;
+let patients = [], current = null, timer = null, visibleCount = 0;
 
 const el = (tag, attrs, text) => {
   const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
@@ -94,39 +248,58 @@ const el = (tag, attrs, text) => {
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
 function draw(res, p, shown) {
+  const box = svg.getBoundingClientRect();
+  const width = Math.max(320, box.width || 900);
+  const height = Math.max(240, box.height || H);
+  const m = { ...M, l: width < 400 ? 42 : M.l, r: width < 400 ? 12 : M.r };
+  svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
   svg.replaceChildren();
   const hours = p.records.map(r => r.ICULOS);
   const x0 = Math.min(...hours), x1 = Math.max(...hours, p.onset_iculos ?? 0);
-  const x = h => M.l + (h - x0) / Math.max(1, x1 - x0) * (W - M.l - M.r);
-  const y = v => M.t + (1 - v) * (H - M.t - M.b);
+  const x = h => m.l + (h - x0) / Math.max(1, x1 - x0) * (width - m.l - m.r);
+  const y = v => m.t + (1 - v) * (height - m.t - m.b);
 
   if (p.onset_iculos != null) {
     const a = Math.max(x0, p.onset_iculos - 12), b = Math.min(x1, p.onset_iculos + 3);
-    svg.append(el("rect", { x: x(a), y: M.t, width: Math.max(0, x(b) - x(a)),
-      height: H - M.t - M.b, fill: css("--window") }));
+    svg.append(el("rect", { x: x(a), y: m.t, width: Math.max(0, x(b) - x(a)),
+      height: height - m.t - m.b, fill: css("--window") }));
   }
   for (const v of [0, .25, .5, .75, 1]) {
-    svg.append(el("line", { x1: M.l, x2: W - M.r, y1: y(v), y2: y(v), stroke: css("--line") }));
-    svg.append(el("text", { x: M.l - 8, y: y(v) + 4, "text-anchor": "end" }, v.toFixed(2)));
+    svg.append(el("line", { x1: m.l, x2: width - m.r, y1: y(v), y2: y(v),
+      stroke: css("--line") }));
+    svg.append(el("text", { x: m.l - 8, y: y(v) + 4, "text-anchor": "end" }, v.toFixed(2)));
   }
   const step = Math.ceil((x1 - x0) / 10 / 6) * 6 || 6;
-  for (let h = Math.ceil(x0 / step) * step; h <= x1; h += step)
-    svg.append(el("text", { x: x(h), y: H - 12, "text-anchor": "middle" }, h + "h"));
-  svg.append(el("text", { x: W - M.r, y: H - 0, "text-anchor": "end" }, "hours in ICU"));
+  for (let h = Math.ceil(x0 / step) * step; h <= x1; h += step) {
+    svg.append(el("line", { x1: x(h), x2: x(h), y1: m.t, y2: height - m.b,
+      stroke: css("--line"), "stroke-opacity": ".48" }));
+    svg.append(el("text", { x: x(h), y: height - 15, "text-anchor": "middle" }, h + "h"));
+  }
+  svg.append(el("text", { x: width - m.r, y: height - 1, "text-anchor": "end" }, "hours in ICU"));
 
-  svg.append(el("line", { x1: M.l, x2: W - M.r, y1: y(res.threshold), y2: y(res.threshold),
-    stroke: css("--thr"), "stroke-dasharray": "5 4", "stroke-width": 1.5 }));
+  svg.append(el("line", { x1: m.l, x2: width - m.r, y1: y(res.threshold), y2: y(res.threshold),
+    stroke: css("--alert"), "stroke-dasharray": "5 4", "stroke-width": 1.75 }));
   if (p.onset_iculos != null && p.onset_iculos <= x1)
-    svg.append(el("line", { x1: x(p.onset_iculos), x2: x(p.onset_iculos), y1: M.t, y2: H - M.b,
-      stroke: css("--onset"), "stroke-width": 2 }));
+    svg.append(el("line", { x1: x(p.onset_iculos), x2: x(p.onset_iculos), y1: m.t, y2: height - m.b,
+      stroke: css("--muted"), "stroke-width": 2 }));
 
   const pts = res.hourly_risk.slice(0, shown).map((v, i) => `${x(hours[i])},${y(v)}`).join(" ");
   svg.append(el("polyline", { points: pts, fill: "none", stroke: css("--risk"),
-    "stroke-width": 2.25, "stroke-linejoin": "round" }));
+    "stroke-width": 2.75, "stroke-linejoin": "round", "stroke-linecap": "round" }));
   const firstIdx = res.hourly_risk.findIndex(v => v >= res.threshold);
-  if (firstIdx >= 0 && firstIdx < shown)
-    svg.append(el("circle", { cx: x(hours[firstIdx]), cy: y(res.hourly_risk[firstIdx]), r: 5,
-      fill: css("--thr") }));
+  if (firstIdx >= 0 && firstIdx < shown) {
+    const cx = x(hours[firstIdx]), cy = y(res.hourly_risk[firstIdx]);
+    svg.append(el("line", { x1: cx, x2: cx, y1: m.t + 5, y2: height - m.b,
+      stroke: css("--alert"), "stroke-width": 1.5, "stroke-opacity": ".55" }));
+    svg.append(el("circle", { cx, cy, r: 6, fill: css("--alert"), stroke: css("--surface"),
+      "stroke-width": 2.5 }));
+    const anchor = cx > width - 126 ? "end" : "start";
+    const labelX = anchor === "end" ? cx - 9 : cx + 9;
+    svg.append(el("text", { x: labelX, y: m.t + 1, "text-anchor": anchor, class: "alert-label" },
+      `First alert ${hours[firstIdx]}h`));
+  }
+  const alert = res.first_alert_hour == null ? "no alert" : `first alert at ${res.first_alert_hour} hours`;
+  svg.setAttribute("aria-label", `Hourly sepsis risk for patient ${p.id}; ${alert}.`);
 }
 
 function stats(res, p) {
@@ -143,11 +316,12 @@ function stats(res, p) {
     [onset == null ? "not septic" : onset + "h", "Clinical onset"],
     [onset != null && alert != null ? (onset - alert) + "h" : "n/a", "Warning before onset"],
   ];
-  statsEl.replaceChildren(...items.map(([v, k]) => {
-    const d = document.createElement("div"); d.className = "stat";
-    d.innerHTML = "<b></b><span></span>";
-    d.children[0].textContent = v; d.children[1].textContent = k;
-    return d;
+  statsEl.replaceChildren(...items.map(([value, label]) => {
+    const item = document.createElement("div"); item.className = "stat";
+    const dt = document.createElement("dt"), dd = document.createElement("dd");
+    dt.textContent = label; dd.textContent = value;
+    item.append(dt, dd);
+    return item;
   }));
 }
 
@@ -173,20 +347,34 @@ function play(p) {
   clearInterval(timer);
   const res = p.result, n = res.hourly_risk.length;
   let shown = 1;
+  visibleCount = shown;
   statsEl.replaceChildren();
   const tick = () => {
+    visibleCount = shown;
     draw(res, p, shown);
-    statusEl.textContent = `Patient ${p.id} · hour ${p.records[shown - 1].ICULOS} of ${p.records[n - 1].ICULOS}`;
+    statusEl.textContent = `Patient ${p.id} — hour ${p.records[shown - 1].ICULOS} of ${p.records[n - 1].ICULOS}`;
     if (shown >= n) { clearInterval(timer); stats(res, p); return; }
     shown++;
   };
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    shown = n;
+    tick();
+    return;
+  }
   tick();
   timer = setInterval(tick, Math.max(25, 2400 / n));
 }
 
 document.getElementById("replay").onclick = () => current?.result && play(current);
 
-fetch("static/demo_patients.json").then(r => r.json()).then(list => {
+window.addEventListener("resize", () => {
+  if (current?.result && visibleCount) draw(current.result, current, visibleCount);
+});
+
+fetch("static/demo_patients.json").then(r => {
+  if (!r.ok) throw new Error(r.status);
+  return r.json();
+}).then(list => {
   patients = list;
   if (list.some(p => p.result))
     document.getElementById("api-note").textContent =
@@ -194,7 +382,7 @@ fetch("static/demo_patients.json").then(r => r.json()).then(list => {
   const wrap = document.getElementById("patients");
   for (const p of list) {
     const b = document.createElement("button");
-    b.type = "button"; b.dataset.id = p.id;
+    b.type = "button"; b.dataset.id = p.id; b.setAttribute("aria-pressed", "false");
     b.innerHTML = "<span></span><small></small>";
     b.children[0].textContent = p.id;
     b.children[1].textContent = p.kind;
@@ -202,7 +390,9 @@ fetch("static/demo_patients.json").then(r => r.json()).then(list => {
     wrap.append(b);
   }
   select(list[0]);
-}).catch(() => { statusEl.textContent = "Could not load demo patients."; });
+}).catch(() => {
+  statusEl.textContent = "Could not load demo patients. Check the local demo data file and reload.";
+});
 </script>
 </body>
 </html>
