@@ -20,10 +20,8 @@
 
 </div>
 
-A model that scores ICU patients every hour from routine vitals and labs and
-tries to flag sepsis up to 12 hours before onset. It's trained on the
-PhysioNet 2019 Challenge data and scored with the Challenge's own utility
-metric.
+It's trained on the PhysioNet 2019 Challenge data and scored with the
+Challenge's own utility metric.
 
 I wanted to build something in healthcare and learn the tools along the way.
 The task, data and scoring all come from the 2019 PhysioNet/CinC Challenge
