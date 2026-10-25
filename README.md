@@ -1,10 +1,24 @@
+<div align="center">
+
 # Sepsis Early Warning
 
-**[Portfolio](https://shawnjoshua03.github.io/)**
+**A model that scores ICU patients every hour from routine vitals and labs and tries to flag sepsis up to 12 hours before onset.**
 
 [![CI](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml/badge.svg)](https://github.com/ShawnJoshua03/sepsis-early-warning/actions/workflows/ci.yml)
-[![Live demo](https://img.shields.io/badge/demo-live-2457c5)](https://shawnjoshua03.github.io/sepsis-early-warning/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-150458?logo=pandas&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+[![Live demo](https://img.shields.io/badge/demo-live-2457c5)](https://shawnjoshua03.github.io/sepsis-early-warning/)
+[![Write-up](https://img.shields.io/badge/write--up-read-555555)](https://shawnjoshua03.github.io/stories/sepsis-early-warning/)
+
+[Live demo](https://shawnjoshua03.github.io/sepsis-early-warning/) | [Write-up](https://shawnjoshua03.github.io/stories/sepsis-early-warning/) | [Portfolio](https://shawnjoshua03.github.io/)
+
+<img src="https://shawnjoshua03.github.io/images/sepsis-early-warning.jpg" alt="Sepsis Early Warning demo screenshot" width="800">
+
+</div>
 
 A model that scores ICU patients every hour from routine vitals and labs and
 tries to flag sepsis up to 12 hours before onset. It's trained on the
